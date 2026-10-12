@@ -68,15 +68,23 @@ canvas { display:block; width:100%; height:100%; touch-action:none; user-select:
 .life { width:14px; height:14px; background:var(--red); border-radius:50%; transition:background .2s,transform .2s; }
 .life.lost { background:none; border:1px solid #bbb2a7; transform:scale(.8); }
 .workspace.play { display:block; min-height:0; padding:10px 0 0; }
-.workspace.play .board { height:clamp(330px,calc(100svh - 370px),680px); max-width:1120px; margin:auto; }
+.workspace.play .board { height:clamp(330px,calc(100svh - 386px),680px); max-width:1120px; margin:auto; }
 .play-bottom { display:grid; grid-template-columns:1fr 2fr 1fr; gap:42px; align-items:end; padding:14px 0 26px; }
 .target strong { display:block; font-size:40px; line-height:1.1; letter-spacing:-2px; }
 .clock-header { display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:12px; }
-.clock-value { font:29px var(--mono); letter-spacing:-1px; font-variant-numeric:tabular-nums; }
-.track { height:4px; background:#ded8cd; overflow:hidden; }
+.clock-value { font:700 42px var(--mono); letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+.track { height:6px; background:#ded8cd; overflow:hidden; }
 .track span { display:block; background:var(--ink); height:100%; transform-origin:left; }
 .clock.urgent .track span { background:var(--red); }
-.clock.urgent .clock-value { color:var(--red-text); }
+.clock.urgent .clock-value { color:var(--red-text); animation:time-beat .8s ease-in-out infinite; }
+@keyframes time-beat { 50% { opacity:.55; } }
+.exit-button { color:var(--red-text); }
+.rank-list { padding:0; list-style:none; margin:20px 0; }
+.rank-list li { display:grid; grid-template-columns:26px 1fr auto; gap:10px; padding:13px 0; border-bottom:1px solid var(--rule); align-items:center; }
+.rank-list .rank { color:var(--red-text); font:16px var(--mono); }
+.rank-list strong { font:700 20px var(--mono); }
+.rank-list small { display:block; font:11px/1.7 var(--mono); color:var(--text-muted); }
+#home-button { margin:12px 0 0 16px; }
 .cut-hint { font:12px/1.6 var(--mono); text-align:right; color:var(--text-muted); }
 .footer { min-height:52px; border-top:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; gap:16px; color:var(--text-muted); font-size:11px; }
 .footer .dot { display:inline-block; width:5px; height:5px; background:var(--red); border-radius:50%; margin-right:8px; }
@@ -113,7 +121,7 @@ canvas { display:block; width:100%; height:100%; touch-action:none; user-select:
 .new-record { color:var(--red-text); font:12px var(--mono); margin:0 0 22px; }
 .pulse { animation:pulse var(--combo-duration,.3s) ease-out; }
 @keyframes pulse { 50% { transform:scale(var(--combo-scale,1.14)); } }
-dialog { border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:32px; max-width:460px; width:calc(100% - 36px); max-height:calc(100svh - 36px); }
+dialog { border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:32px; max-width:460px; width:calc(100% - 36px); max-height:calc(100svh - 36px); overflow:auto; }
 dialog::backdrop { background:rgba(37,37,37,.3); }
 dialog h2 { font-size:32px; margin:20px 0; }
 dialog p { font-size:14px; line-height:1.8; color:var(--text-muted); }
@@ -148,13 +156,14 @@ dialog .primary { margin-top:12px; width:100%; }
   .stat.combo strong { font-size:26px; } .stat .label { font-size:11px; margin-bottom:5px; }
   .lives { grid-column:1; grid-row:2; margin:0; gap:7px; }
   .lives .label { font-size:11px; margin-right:4px; } .life { width:11px; height:11px; }
+  .exit-button { grid-column:2; grid-row:2; padding:0; font-size:11px; }
   .pause-button { grid-column:3; grid-row:2; padding:0; font-size:11px; }
   .workspace.play { padding:8px 0 0; gap:0; }
-  .workspace.play .board { height:clamp(230px,calc(100svh - 362px),650px); margin:0; }
+  .workspace.play .board { height:clamp(230px,calc(100svh - 374px),650px); margin:0; }
   .instruction { font-size:11px; top:28px; }
   .play-bottom { grid-template-columns:1fr 1.5fr; gap:15px 24px; padding:10px 0 17px; }
   .target .label,.clock .label { font-size:11px; } .target strong { font-size:34px; }
-  .clock-header { margin-bottom:9px; gap:5px; } .clock-value { font-size:23px; letter-spacing:-1px; }
+  .clock-header { margin-bottom:9px; gap:5px; } .clock-value { font-size:32px; letter-spacing:-1px; }
   .cut-hint { grid-column:1/-1; font-size:11px; text-align:center; line-height:1.4; }
   .cut-hint br { display:none; }
   .footer { min-height:42px; font-size:11px; } .footer .signature { display:none; }
@@ -168,7 +177,7 @@ dialog .primary { margin-top:12px; width:100%; }
   .reveal.excellent .percentages { font-size:42px; }
   .end { display:block; padding:32px 0; max-width:400px; }
   .end h2 { font-size:32px; } .final-score { font-size:80px; }
-  .end .primary { width:100%; } .end-right { margin-top:28px; }
+  .end .primary { width:100%; } #home-button { margin-left:0; } .end-right { margin-top:28px; }
   .end-detail { padding:14px 0; } .end-detail .label { font-size:11px; }
   .end-detail strong { font-size:17px; } .end-note { font-size:13px; }
   dialog { padding:24px; }
@@ -179,9 +188,9 @@ dialog .primary { margin-top:12px; width:100%; }
   .tagline { font-size:25px; } .description { font-size:12px; }
   .board { height:220px; margin-bottom:60px; }
   .hud { padding-top:12px; gap:9px; } #score { font-size:32px; }
-  .workspace.play .board { height:calc(100svh - 325px); min-height:200px; }
+  .workspace.play .board { height:calc(100svh - 337px); min-height:200px; }
   .play-bottom { padding:8px 0 12px; gap:10px 18px; }
-  .target strong { font-size:30px; } .clock-value { font-size:21px; }
+  .target strong { font-size:30px; } .clock-value { font-size:28px; }
   .footer { min-height:36px; }
   .reveal.perfect { padding:20px 0; }
 }
@@ -206,7 +215,7 @@ dialog .primary { margin-top:12px; width:100%; }
 <main>
  <section class="hud" id="hud" hidden aria-label="游戏状态">
   <div class="stat-group"><div class="stat"><span class="label">回合</span><strong id="round">01</strong></div><div class="stat"><span class="label">得分</span><strong id="score">00000</strong></div><div class="stat combo"><span class="label">连击</span><strong id="combo">×0</strong></div></div>
-  <div class="lives" id="lives" aria-label="剩余 3 条生命"><span class="label">生命</span><span class="life"></span><span class="life"></span><span class="life"></span></div><button class="text-button pause-button" id="pause-button">Ⅱ 暂停</button>
+  <div class="lives" id="lives" aria-label="剩余 3 条生命"><span class="label">生命</span><span class="life"></span><span class="life"></span><span class="life"></span></div><button class="text-button pause-button" id="pause-button">Ⅱ 暂停</button><button class="text-button exit-button" id="exit-button">退出</button>
  </section>
  <section class="workspace" id="workspace">
   <div class="intro" id="intro"><div class="eyebrow">精准挑战 / 第 001 号</div><h1>50<span class="slash">/</span>50</h1><h2 class="tagline">一刀平分。<br>恰好平衡。</h2><p class="description">划一条直线，把图形分成面积相等的两半。<br><span class="extra">凭直觉下刀，离完美再近一点。</span></p><button class="primary" id="start">开始挑战 <span class="arrow" aria-hidden="true">↗</span></button><p class="intro-note">三条生命，无尽挑战。</p></div>
@@ -221,122 +230,207 @@ dialog .primary { margin-top:12px; width:100%; }
  </section>
  <section class="play-bottom" id="play-bottom" hidden>
   <div class="target"><span class="label">目标 / 面积平分</span><strong>50.0%</strong></div>
-  <div class="clock" id="clock"><div class="clock-header"><span class="label">剩余时间</span><span class="clock-value" id="time">18.0秒</span></div><div class="track" role="progressbar" aria-label="剩余时间" aria-valuemin="0" aria-valuemax="18" aria-valuenow="18" id="timer"><span id="time-bar"></span></div></div>
+  <div class="clock" id="clock"><div class="clock-header"><span class="label">剩余时间</span><span class="clock-value" id="time">12.0秒</span></div><div class="track" role="progressbar" aria-label="剩余时间" aria-valuemin="0" aria-valuemax="12" aria-valuenow="12" id="timer"><span id="time-bar"></span></div></div>
   <div class="cut-hint" id="cut-hint">寻找平衡。<br>相信你的眼睛。</div>
  </section>
  <section class="end" id="end" hidden aria-labelledby="end-title">
-  <div><div class="eyebrow">你的精准成绩</div><h2 id="end-title">挑战完成。</h2><div class="final-score" id="final-score">0</div><p class="new-record" id="new-record" hidden>↗ 刷新个人纪录</p><button class="primary" id="retry">再挑战一次 <span class="arrow" aria-hidden="true">→</span></button><p class="end-note">每一次尝试，<br>都离完美更近一点。</p></div>
+  <div><div class="eyebrow">你的精准成绩</div><h2 id="end-title">挑战完成。</h2><div class="final-score" id="final-score">0</div><p class="new-record" id="new-record" hidden>↗ 刷新个人纪录</p><button class="primary" id="retry">再挑战一次 <span class="arrow" aria-hidden="true">→</span></button><button class="text-button" id="home-button">返回首页</button><p class="end-note">每一次尝试，<br>都离完美更近一点。</p></div>
   <div class="end-right"><div class="end-detail"><span class="label">历史最高分</span><strong id="final-best"></strong></div><div class="end-detail"><span class="label">挑战回合数</span><strong id="final-round"></strong></div><div class="end-detail"><span class="label">本次 / 历史最高连击</span><strong id="final-combo"></strong></div><div class="end-detail best-cut"><span class="label">最精准的一刀</span><strong id="final-cut"></strong></div><p class="micro" style="color:var(--text-muted);margin-top:25px">一刀平分，恰好平衡。</p></div>
  </section>
 </main>
-<footer class="footer"><span><span class="dot"></span>三条生命 · 无尽挑战</span><span class="signature" id="footer-note">为平分而生。</span></footer>
+<footer class="footer"><span><span class="dot"></span>三条生命 · 无尽挑战</span><button class="text-button" id="leaderboard-button" aria-haspopup="dialog">本机排行榜</button><span class="signature" id="footer-note">为平分而生。</span></footer>
 </div>
-<dialog id="help" aria-labelledby="help-title"><button class="text-button close" id="help-close" aria-label="关闭玩法说明">关闭 ×</button><div class="eyebrow">玩法很简单</div><h2 id="help-title">目标，就是一半。</h2><p>拖动鼠标或手指划线，松手完成切割。这一刀会沿直线无限延伸，只显示穿过图形的部分。</p><p>让两边面积尽量接近 50%，即可保住生命并累计连击。偏差过大或时间耗尽会损失一条生命。短拖动、没有穿过图形或仅与边缘相切，都不算有效切割。</p><p class="rules">完美平分：误差 ≤ 0.5 个百分点<br>非常精准：误差 ≤ 2 个百分点<br>合格：误差 ≤ 当轮容差（8 → 6 → 5）<br>限时：18 → 15 → 13 秒，最低 7 秒</p><p>得分 = 四舍五入［1000 ×（1 − 误差 /（容差 + 2））× 连击倍率］。每多一次连续成功，倍率增加 10%，最高 2 倍。失败不计分。</p><p>键盘操作：选中画布后，↑ ↓ 移动直线，← → 旋转，回车键切割，Shift 键精细调整，Esc 键暂停或继续。浏览器允许存储时，最高分和最高连击会保存在本设备。</p><button class="primary" id="help-done">明白了 <span class="arrow" aria-hidden="true">→</span></button></dialog>
+<dialog id="help" aria-labelledby="help-title"><button class="text-button close" id="help-close" aria-label="关闭玩法说明">关闭 ×</button><div class="eyebrow">玩法很简单</div><h2 id="help-title">目标，就是一半。</h2><p>拖动鼠标或手指划线，松手完成切割。这一刀会沿直线无限延伸，只显示穿过图形的部分。</p><p>让两边面积尽量接近 50%，即可保住生命并累计连击。偏差过大或时间耗尽会损失一条生命。短拖动、没有穿过图形或仅与边缘相切，都不算有效切割。</p><p class="rules">完美平分：误差 ≤ 0.5 个百分点<br>非常精准：误差 ≤ 2 个百分点<br>合格：误差 ≤ 当轮容差（6 → 4 → 3）<br>限时：12 → 9 → 7.5 秒，最低 4.5 秒</p><p>得分 = 四舍五入［1000 ×（1 − 误差 /（容差 + 2））× 连击倍率］。每多一次连续成功，倍率增加 10%，最高 2 倍。失败不计分。</p><p>键盘操作：选中画布后，↑ ↓ 移动直线，← → 旋转，回车键切割，Shift 键精细调整，Esc 键暂停或继续。点击「退出」返回首页并记录本次成绩；底部「本机排行榜」可查看挑战排名。浏览器允许存储时，历史成绩、最高分和最高连击保存在本设备。</p><button class="primary" id="help-done">明白了 <span class="arrow" aria-hidden="true">→</span></button></dialog>
+<dialog id="leaderboard" aria-labelledby="leaderboard-title"><button class="text-button close" id="leaderboard-close" aria-label="关闭排行榜">关闭 ×</button><div class="eyebrow">每一次，离完美更近</div><h2 id="leaderboard-title">本机排行榜</h2><p id="rank-summary"></p><ol class="rank-list" id="rank-list"></ol><p class="micro">只记录此浏览器的成绩，按得分、回合和连击排序。退出挑战也会记录；尚未结束的挑战不会提前入榜。</p><button class="primary" id="leaderboard-done">返回</button></dialog>
 <script id="geometry">
 'use strict';
 // 所有几何计算统一使用 1000 × 800 逻辑坐标，与屏幕像素无关。
 const Geometry = (() => {
-  const EPS = 1e-8;
-  const cross = (a, b, p) => (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
-  function area(poly) {
-    if (poly.length < 3) return 0;
-    // 以首个顶点为原点，减少较远坐标相减带来的浮点消去误差。
-    const o = poly[0];
-    let sum = 0;
-    for (let i=1; i<poly.length-1; i++) sum += cross(o, poly[i], poly[i+1]);
-    return Math.abs(sum)/2;
+  const EPS=1e-8,LINE_EPS=1e-7;
+  const cross=(a,b,p)=>(b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
+  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  function clean(poly){
+    if(!Array.isArray(poly))return [];
+    const out=[];
+    for(const point of poly){
+      if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y))continue;
+      if(!out.length||distance(out[out.length-1],point)>EPS)out.push({x:point.x,y:point.y});
+    }
+    if(out.length>1&&distance(out[0],out[out.length-1])<=EPS)out.pop();
+    return out;
   }
-  function clip(poly, a, b, side) {
-    const output = [];
-    for (let i=0; i<poly.length; i++) {
-      const p = poly[i], q = poly[(i+1)%poly.length];
-      const dp = side*cross(a,b,p), dq = side*cross(a,b,q);
-      const pin = dp >= 0, qin = dq >= 0;
-      if (pin) output.push(p);
-      if (pin !== qin) {
-        const t = dp/(dp-dq);
-        output.push({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+  function signedArea(poly){
+    const points=clean(poly);if(points.length<3)return 0;let sum=0;
+    for(let i=0;i<points.length;i++){const p=points[i],q=points[(i+1)%points.length];sum+=p.x*q.y-q.x*p.y;}
+    return sum/2;
+  }
+  function signedAreaRaw(poly){
+    let sum=0;
+    for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length];sum+=p.x*q.y-q.x*p.y;}
+    return sum/2;
+  }
+  function area(poly){
+    if(!Array.isArray(poly))return 0;
+    if(Array.isArray(poly[0]))return poly.reduce((sum,part)=>sum+Math.abs(signedAreaRaw(part)),0);
+    if(poly.length<3)return 0;
+    return Math.abs(signedArea(poly));
+  }
+  function clipConvex(poly,a,b,side){
+    const points=poly,output=[];if(points.length<3)return output;
+    for(let i=0;i<points.length;i++){
+      const p=points[i],q=points[(i+1)%points.length],dp=side*cross(a,b,p),dq=side*cross(a,b,q),pin=dp>=-LINE_EPS,qin=dq>=-LINE_EPS;
+      if(pin)output.push(p);
+      if(pin!==qin){const t=dp/(dp-dq);output.push({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});}
+    }
+    if(output.length>1&&distance(output[0],output[output.length-1])<=EPS)output.pop();
+    return output;
+  }
+  function pointInTriangle(p,a,b,c){
+    // 耳切要求耳三角形内不能再有任何顶点；落在对角线上的顶点也必须阻止
+    // 该耳，避免对角线穿过凹轮廓的非相邻顶点。精确共线的边界点会在
+    // triangulate() 中先被去掉，因此这里统一按闭三角形判定。
+    const c1=cross(a,b,p),c2=cross(b,c,p),c3=cross(c,a,p);
+    return c1>=-LINE_EPS&&c2>=-LINE_EPS&&c3>=-LINE_EPS;
+  }
+  function reduceCollinear(points){
+    const out=points.slice();let changed=true;
+    while(changed&&out.length>3){
+      changed=false;
+      for(let i=0;i<out.length;i++){
+        const prev=out[(i+out.length-1)%out.length],point=out[i],next=out[(i+1)%out.length];
+        const crossValue=cross(prev,point,next);
+        const dot=(point.x-prev.x)*(point.x-next.x)+(point.y-prev.y)*(point.y-next.y);
+        if(Math.abs(crossValue)<=LINE_EPS&&dot<=LINE_EPS){out.splice(i,1);changed=true;break;}
       }
+    }
+    return out;
+  }
+  const triangulationCache=new WeakMap();
+  function triangulate(poly){
+    if(Array.isArray(poly)&&triangulationCache.has(poly))return triangulationCache.get(poly);
+    const points=reduceCollinear(clean(poly));if(points.length<3)return [];
+    const order=[];if(signedArea(points)>0)for(let i=0;i<points.length;i++)order.push(i);else for(let i=points.length-1;i>=0;i--)order.push(i);
+    const triangles=[];let guard=0;
+    while(order.length>3&&guard<points.length*points.length){
+      let ear=false;
+      for(let i=0;i<order.length;i++){
+        const ia=order[(i+order.length-1)%order.length],ib=order[i],ic=order[(i+1)%order.length],a=points[ia],b=points[ib],c=points[ic];
+        if(cross(a,b,c)<=LINE_EPS)continue;
+        let contains=false;
+        for(const candidate of order){if(candidate!==ia&&candidate!==ib&&candidate!==ic&&pointInTriangle(points[candidate],a,b,c)){contains=true;break;}}
+        if(contains)continue;
+        triangles.push([a,b,c]);order.splice(i,1);ear=true;break;
+      }
+      if(!ear)break;guard++;
+    }
+    if(order.length===3)triangles.push([points[order[0]],points[order[1]],points[order[2]]]);
+    if(Array.isArray(poly))triangulationCache.set(poly,triangles);
+    return triangles;
+  }
+  function clipParts(poly,a,b,side){
+    const parts=[];
+    for(const triangle of triangulate(poly)){const part=clipConvex(triangle,a,b,side);if(part.length>=3&&Math.abs(signedAreaRaw(part))>EPS)parts.push(part);}
+    return parts;
+  }
+  const legacyParts=parts=>parts.length===1?parts[0]:parts;
+  function clip(poly,a,b,side){
+    // 面积兼容路径保留单一轮廓；凹形的分离片只在 split().leftParts/rightParts 中渲染。
+    const points=clean(poly),output=[];
+    for(let i=0;i<points.length;i++){
+      const p=points[i],q=points[(i+1)%points.length],dp=side*cross(a,b,p),dq=side*cross(a,b,q),pin=dp>=-LINE_EPS,qin=dq>=-LINE_EPS;
+      if(pin)output.push(p);
+      if(pin!==qin){const t=dp/(dp-dq);output.push({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});}
     }
     return output;
   }
-  function split(poly,a,b) {
-    if (Math.hypot(b.x-a.x,b.y-a.y)<EPS) return null;
-    const left = clip(poly,a,b,1), right = clip(poly,a,b,-1);
-    const a1 = area(left), a2 = area(right), total = a1+a2;
-    if (total<EPS || Math.min(a1,a2) <= total*1e-7) return null;
-    return {left,right,a1,a2,percent:a1/total*100,error:Math.abs(a1/total*100-50)};
+  function split(poly,a,b){
+    if(distance(a,b)<EPS)return null;
+    const sourceArea=area(poly),leftParts=clipParts(poly,a,b,1),rightParts=clipParts(poly,a,b,-1),a1=area(leftParts),a2=area(rightParts),total=a1+a2;
+    if(sourceArea<EPS||total<EPS||Math.min(a1,a2)<=sourceArea*1e-7)return null;
+    // parts 只是渲染和分区结果；面积守恒必须与原始轮廓独立核对，不能让
+    // a1+a2 自己成为唯一的总面积真值，从而掩盖耳切漏片。
+    if(Math.abs(total-sourceArea)>Math.max(1e-6,sourceArea*1e-9))return null;
+    const percent=a1/sourceArea*100;
+    return {left:legacyParts(leftParts),right:legacyParts(rightParts),leftParts,rightParts,a1,a2,percent,error:Math.abs(percent-50)};
   }
-  function intersections(poly,a,b) {
-    const points=[];
-    const add=p=>{if(!points.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<1e-6))points.push(p);};
-    for(let i=0;i<poly.length;i++) {
-      const p=poly[i],q=poly[(i+1)%poly.length],dp=cross(a,b,p),dq=cross(a,b,q);
-      if(Math.abs(dp)<EPS)add(p);
-      if((dp<0&&dq>0)||(dp>0&&dq<0)){const t=dp/(dp-dq);add({x:p.x+t*(q.x-p.x),y:p.y+t*(q.y-p.y)});}
+  function pointOnSegment(p,a,b){return Math.abs(cross(a,b,p))<=LINE_EPS&&p.x>=Math.min(a.x,b.x)-LINE_EPS&&p.x<=Math.max(a.x,b.x)+LINE_EPS&&p.y>=Math.min(a.y,b.y)-LINE_EPS&&p.y<=Math.max(a.y,b.y)+LINE_EPS;}
+  function pointInPolygon(point,poly){
+    let inside=false;
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const a=poly[j],b=poly[i];if(pointOnSegment(point,a,b))return true;
+      if((a.y>point.y)!==(b.y>point.y)){const x=(b.x-a.x)*(point.y-a.y)/(b.y-a.y)+a.x;if(point.x<x)inside=!inside;}
     }
-    if(points.length<2)return [];
-    const dx=b.x-a.x,dy=b.y-a.y;
-    points.sort((p,q)=>(p.x-q.x)*dx+(p.y-q.y)*dy);
-    return [points[0],points[points.length-1]];
+    return inside;
   }
-  function hull(points) {
-    const sorted=points.slice().sort((a,b)=>a.x-b.x||a.y-b.y);
-    function half(list){const h=[];for(const p of list){while(h.length>=2&&cross(h[h.length-2],h[h.length-1],p)<=EPS)h.pop();h.push(p);}return h;}
-    const lo=half(sorted),hi=half(sorted.slice().reverse());
-    return lo.slice(0,-1).concat(hi.slice(0,-1));
+  function segments(poly,a,b){
+    const points=[],add=point=>{if(!points.some(q=>distance(point,q)<1e-6))points.push(point);};
+    for(let i=0;i<poly.length;i++){
+      const p=poly[i],q=poly[(i+1)%poly.length],dp=cross(a,b,p),dq=cross(a,b,q);
+      if(Math.abs(dp)<=LINE_EPS)add({x:p.x,y:p.y});
+      if((dp<-LINE_EPS&&dq>LINE_EPS)||(dp>LINE_EPS&&dq<-LINE_EPS)){const t=dp/(dp-dq);add({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});}
+    }
+    const dx=b.x-a.x,dy=b.y-a.y,length2=dx*dx+dy*dy;
+    points.sort((p,q)=>((p.x-a.x)*dx+(p.y-a.y)*dy)/length2-((q.x-a.x)*dx+(q.y-a.y)*dy)/length2);
+    const result=[];
+    for(let i=0;i+1<points.length;i++){const p=points[i],q=points[i+1];if(distance(p,q)<=LINE_EPS)continue;const midpoint={x:(p.x+q.x)/2,y:(p.y+q.y)/2};if(pointInPolygon(midpoint,poly))result.push([p,q]);}
+    return result;
   }
-  function valid(poly) {
-    if(poly.length<3||area(poly)<55000)return false;
-    const xs=poly.map(p=>p.x),ys=poly.map(p=>p.y),w=Math.max(...xs)-Math.min(...xs),h=Math.max(...ys)-Math.min(...ys);
-    if(w/h<0.48||w/h>2.08)return false;
-    if(poly.some(p=>p.x<140||p.x>860||p.y<100||p.y>700))return false;
-    return poly.every((p,i)=>cross(p,poly[(i+1)%poly.length],poly[(i+2)%poly.length])>EPS);
+  function intersections(poly,a,b){const parts=segments(poly,a,b);return parts.length?[parts[0][0],parts[parts.length-1][1]]:[];}
+  function hull(points){
+    const sorted=points.map(p=>({x:p.x,y:p.y})).sort((a,b)=>a.x-b.x||a.y-b.y);if(sorted.length<3)return sorted;
+    function half(list){const h=[];for(const p of list){while(h.length>=2&&cross(h[h.length-2],h[h.length-1],p)<=LINE_EPS)h.pop();h.push(p);}return h;}
+    const lo=half(sorted),hi=half(sorted.slice().reverse());return lo.slice(0,-1).concat(hi.slice(0,-1));
   }
-  return {area,clip,split,intersections,hull,valid,cross};
+  function edgeIntersects(a,b,c,d){
+    const ab1=cross(a,b,c),ab2=cross(a,b,d),cd1=cross(c,d,a),cd2=cross(c,d,b);
+    if(((ab1>LINE_EPS&&ab2<-LINE_EPS)||(ab1<-LINE_EPS&&ab2>LINE_EPS))&&((cd1>LINE_EPS&&cd2<-LINE_EPS)||(cd1<-LINE_EPS&&cd2>LINE_EPS)))return true;
+    return (Math.abs(ab1)<=LINE_EPS&&pointOnSegment(c,a,b))||(Math.abs(ab2)<=LINE_EPS&&pointOnSegment(d,a,b))||(Math.abs(cd1)<=LINE_EPS&&pointOnSegment(a,c,d))||(Math.abs(cd2)<=LINE_EPS&&pointOnSegment(b,c,d));
+  }
+  function valid(poly){
+    const points=clean(poly);if(points.length!==poly.length||points.length<3||area(points)<55000)return false;
+    const xs=points.map(p=>p.x),ys=points.map(p=>p.y),w=Math.max(...xs)-Math.min(...xs),h=Math.max(...ys)-Math.min(...ys);
+    if(!h||w/h<0.48||w/h>2.08)return false;if(points.some(p=>p.x<140||p.x>860||p.y<100||p.y>700))return false;
+    for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];if(distance(a,b)<=LINE_EPS)return false;for(let j=i+1;j<points.length;j++){if(j===i+1||(i===0&&j===points.length-1))continue;if(edgeIntersects(a,b,points[j],points[(j+1)%points.length]))return false;}}
+    return Math.abs(signedArea(points))>55000;
+  }
+  return {area,clip,split,segments,intersections,hull,valid,cross,triangulate};
 })();
 const ShapeGenerator = (() => {
-  function create(round,random) {
-    let points;
+  const silhouettes=[
+    {name:'猫',anchors:[{x:240,y:-20},{x:190,y:-80},{x:125,y:-205},{x:78,y:-105},{x:10,y:-110},{x:-55,y:-205},{x:-82,y:-92},{x:-145,y:-50},{x:-195,y:38},{x:-252,y:30},{x:-320,y:-20},{x:-270,y:92},{x:-170,y:120},{x:-125,y:210},{x:-80,y:210},{x:-90,y:65},{x:15,y:60},{x:55,y:205},{x:102,y:205},{x:102,y:30},{x:195,y:30}]},
+    {name:'鸟',anchors:[{x:270,y:-28},{x:215,y:-80},{x:130,y:-125},{x:72,y:-104},{x:18,y:-160},{x:-82,y:-122},{x:-24,y:-38},{x:-148,y:-62},{x:-252,y:-138},{x:-205,y:-8},{x:-260,y:122},{x:-122,y:62},{x:-5,y:130},{x:125,y:118},{x:212,y:65}]},
+    {name:'鲸',anchors:[{x:285,y:0},{x:232,y:-70},{x:145,y:-120},{x:80,y:-165},{x:30,y:-120},{x:-70,y:-95},{x:-160,y:-60},{x:-250,y:-138},{x:-215,y:-18},{x:-280,y:108},{x:-145,y:48},{x:-35,y:120},{x:100,y:128},{x:218,y:76}]},
+    {name:'鱼',anchors:[{x:280,y:-8},{x:222,y:-72},{x:120,y:-128},{x:0,y:-116},{x:-122,y:-70},{x:-252,y:-155},{x:-208,y:-18},{x:-266,y:140},{x:-120,y:62},{x:0,y:118},{x:128,y:104},{x:222,y:56}]},
+  ];
+  const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+  function sampleOutline(anchors,samples=6){
+    const points=[];
+    for(let i=0;i<anchors.length;i++){
+      const prev=anchors[(i+anchors.length-1)%anchors.length],current=anchors[i],next=anchors[(i+1)%anchors.length];
+      const start=lerp(prev,current,.28),end=lerp(current,next,.28);
+      for(let j=0;j<samples;j++){const t=j/samples,u=1-t;points.push({x:u*u*start.x+2*u*t*current.x+t*t*end.x,y:u*u*start.y+2*u*t*current.y+t*t*end.y});}
+    }
+    return points;
+  }
+  function transform(points,random,rotation){
+    const sx=.9+random()*.2,sy=.88+random()*.24,shear=(random()-.5)*.22,mirror=random()<.5?-1:1,c=Math.cos(rotation),s=Math.sin(rotation);
+    return points.map(point=>{const x=point.x*mirror*sx,y=point.y*sy+point.x*shear;return{x:x*c-y*s,y:x*s+y*c};});
+  }
+  function create(round,random){
     if(round<=3){
-      const w=400+random()*70,h=310+random()*80,skew=round===1?0:60+random()*55,top=round===3?0.76+random()*0.16:1;
-      points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}];
-    } else {
-      const n=round<=8?(round%2?5:4):5+Math.floor(random()*4);
-      // 在椭圆的一段不均匀圆弧上取点，再由端点弦闭合。
-      // 弦侧与弧侧面积不同，增加顶点不会把图形重新变成中心对称。
-      const span=Math.PI*(round<=8?1.3+random()*0.38:1.08+random()*0.32);
-      const rx=270+random()*55,ry=245+random()*40,shear=(random()-0.5)*0.35;
-      points=Array.from({length:n},(_,i)=>{
-        const jitter=i===0||i===n-1?0:(random()-0.5)*0.44;
-        const angle=-span/2+(i+jitter)*span/(n-1);
-        const y=Math.sin(angle)*ry;
-        return {x:Math.cos(angle)*rx+shear*y,y};
-      });
+      const w=round===1?430+random()*45:400+random()*75,h=round===1?320+random()*35:300+random()*100,skew=round===1?0:round===2?45+random()*65:75+random()*80,top=round===3?.74+random()*.2:1;
+      const points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}],rotation=round===1?0:(random()-.5)*.42,c=Math.cos(rotation),s=Math.sin(rotation),poly=points.map(point=>({x:500+point.x*c-point.y*s,y:400+point.x*s+point.y*c}));
+      poly.kind=round===1?'矩形':'四边形';return poly;
     }
-    const rotation=round===1?0:round<=3?(random()-0.5)*0.42:random()*Math.PI*2;
-    const c=Math.cos(rotation),s=Math.sin(rotation);
-    let poly=Geometry.hull(points.map(p=>({x:p.x*c-p.y*s,y:p.x*s+p.y*c})));
-    const xs=poly.map(p=>p.x),ys=poly.map(p=>p.y);
-    const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
-    const width=Math.max(...xs)-Math.min(...xs),height=Math.max(...ys)-Math.min(...ys);
-    const scale=Math.min(1,640/width,540/height);
-    // 对齐包围盒中心，而非只平移偏置：难度来自真实形状面积分布。
-    poly=poly.map(p=>({x:500+(p.x-cx)*scale,y:400+(p.y-cy)*scale}));
-    return poly;
+    const shape=silhouettes[Math.floor(random()*silhouettes.length)],rotation=random()*Math.PI*2,points=transform(sampleOutline(shape.anchors,6),random,rotation),xs=points.map(point=>point.x),ys=points.map(point=>point.y),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2,width=Math.max(...xs)-Math.min(...xs),height=Math.max(...ys)-Math.min(...ys),scale=Math.min(1,640/width,540/height),poly=points.map(point=>({x:500+(point.x-cx)*scale,y:400+(point.y-cy)*scale}));
+    poly.kind=shape.name;return poly;
   }
-  function generate(round,random=Math.random) {
-    // 每个候选图形通过有效性检查后，才交给玩家切割。
-    for(let attempt=0;attempt<8;attempt++){
-      const poly=create(round,random);
-      const verticesOk=round<=3?poly.length===4:round<=8?poly.length===(round%2?5:4):poly.length>=5&&poly.length<=8;
-      if(verticesOk&&Geometry.valid(poly))return poly;
-    }
-    // 固定有效参数仍保留同一套面积偏置，避免退回对称的后期图形。
-    return create(round,()=>0.37);
+  function generate(round,random=Math.random){
+    for(let attempt=0;attempt<10;attempt++){const poly=create(round,random);if(Geometry.valid(poly))return poly;}
+    const poly=create(round,()=>.37);if(Geometry.valid(poly))return poly;throw new Error('无法生成有效图形');
   }
-  function difficulty(round){return{tolerance:round<=3?8:round<=8?6:5,seconds:round<=3?18:round<=8?15:Math.max(7,13-(round-9)*0.28)};}
-  return {generate,difficulty};
+  function difficulty(round){return{tolerance:round<=3?6:round<=8?4:3,seconds:round<=3?12:round<=8?9:Math.max(4.5,7.5-(round-9)*.16)};}
+  return {generate,difficulty,kinds:silhouettes.map(shape=>shape.name),sampleOutline:(name,samples=6)=>{const shape=silhouettes.find(item=>item.name===name)||silhouettes[0];return sampleOutline(shape.anchors,samples);}};
 })();
 </script>
 <script id="scoring">
@@ -357,9 +451,9 @@ const $=id=>document.getElementById(id);
 const canvas=$('canvas'),ctx=canvas.getContext('2d');
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const Records={
-  key:'5050.records.v1',
-  load(){try{const r=JSON.parse(localStorage.getItem(this.key));return{score:Number.isSafeInteger(r?.score)&&r.score>=0?r.score:0,combo:Number.isSafeInteger(r?.combo)&&r.combo>=0?r.combo:0};}catch{return{score:0,combo:0};}},
-  save(r){try{localStorage.setItem(this.key,JSON.stringify(r));return true;}catch{return false;}}
+  key:'5050.records.v1',available:true,
+  load(){try{const r=JSON.parse(localStorage.getItem(this.key));const integer=v=>Number.isSafeInteger(v)&&v>=0;return{score:integer(r?.score)?r.score:0,combo:integer(r?.combo)?r.combo:0,runs:Array.isArray(r?.runs)?r.runs.filter(x=>x&&integer(x.score)&&integer(x.round)&&integer(x.combo)&&Number.isFinite(x.at)&&['结束','退出'].includes(x.reason)):[]};}catch{this.available=false;return{score:0,combo:0,runs:[]};}},
+  save(r){try{localStorage.setItem(this.key,JSON.stringify(r));this.available=true;return true;}catch{this.available=false;return false;}}
 };
 const Sound={
   enabled:true,context:null,master:null,lastStroke:0,
@@ -376,7 +470,7 @@ Sound.init();$('sound-button').addEventListener('click',()=>Sound.toggle());
 const state={phase:'home',round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,poly:ShapeGenerator.generate(5),difficulty:ShapeGenerator.difficulty(1),deadline:0,remaining:0,cut:null,revealAt:0,judgment:null,records:Records.load(),previousBest:0};
 const view={width:0,height:0,scale:1,x:0,y:0,dpr:1};
 const input={pointerId:null,a:null,b:null,clientStart:null,keyLine:null};
-let helpPaused=false,lastTimerText='',hintUntil=0;
+let helpPaused=false,leaderboardPaused=false,lastTimerText='',hintUntil=0;
 function resetInput(){
   if(input.pointerId!==null&&canvas.hasPointerCapture(input.pointerId))canvas.releasePointerCapture(input.pointerId);
   input.pointerId=null;input.a=null;input.b=null;input.clientStart=null;input.keyLine=null;
@@ -386,14 +480,15 @@ function updateView(){
   const width=Math.max(...xs)-Math.min(...xs),height=Math.max(...ys)-Math.min(...ys);
   const padding=view.width<600?24:64,top=state.phase==='home'?24:view.width<600?48:64,bottom=state.phase==='home'?24:40;
   view.scale=Math.min((view.width-padding*2)/width,(view.height-top-bottom)/height);
-  view.x=view.width/2-500*view.scale;view.y=top+(view.height-top-bottom)/2-400*view.scale;
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+  view.x=view.width/2-cx*view.scale;view.y=top+(view.height-top-bottom)/2-cy*view.scale;
 }
 function resize(){
   const rect=canvas.getBoundingClientRect();
   view.width=rect.width;view.height=rect.height;view.dpr=window.devicePixelRatio||1;
   canvas.width=Math.round(rect.width*view.dpr);canvas.height=Math.round(rect.height*view.dpr);
   updateView();
-  resetInput();Renderer.draw(performance.now());
+  resetInput();const now=performance.now();Renderer.draw(now);Renderer.fireworks(now);
 }
 function mapPointer(event){const rect=canvas.getBoundingClientRect();return{x:(event.clientX-rect.left-view.x)/view.scale,y:(event.clientY-rect.top-view.y)/view.scale};}
 function updateHUD(){
@@ -406,7 +501,7 @@ function updateHUD(){
 function startRun(){
   Sound.unlock();
   $('help').close();helpPaused=false;
-  resetInput();Object.assign(state,{round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,previousBest:state.records.score});
+  resetInput();Object.assign(state,{round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,runRecorded:false,previousBest:state.records.score});
   $('intro').hidden=true;$('end').hidden=true;$('workspace').hidden=false;$('workspace').classList.add('play');$('hud').hidden=false;$('play-bottom').hidden=false;
   $('home-marker').hidden=true;$('home-caption').hidden=true;$('board-code').hidden=true;$('paused').hidden=true;
   $('board-tag').textContent='图 01 / 一刀平分';$('footer-note').textContent='一刀平分，恰好平衡。';
@@ -417,7 +512,7 @@ function nextRound(){
   state.remaining=state.difficulty.seconds;state.deadline=performance.now()+state.remaining*1000;
   $('reveal').className='reveal';document.body.classList.remove('perfect');$('instruction').hidden=false;
   $('instruction').className='instruction';$('instruction').textContent=state.round===1?'划线穿过图形，松手完成切割。':'一条直线，面积平分。';
-  $('board-tag').textContent=`图 ${String(state.round).padStart(2,'0')} / ${state.poly.length} 个顶点`;
+  $('board-tag').textContent=`图 ${String(state.round).padStart(2,'0')} / ${state.poly.kind||'几何挑战'}`;
   $('cut-hint').innerHTML=`误差不超过 ±${state.difficulty.tolerance}.0 个百分点<br>即可保住生命。`;
   $('timer').setAttribute('aria-valuemax',state.difficulty.seconds);updateView();updateHUD();
 }
@@ -449,7 +544,31 @@ function settle(cut,now){
   if(j.success){$('combo').style.setProperty('--combo-scale',String(1.08+Math.min(j.combo,10)*.012));$('combo').style.setProperty('--combo-duration',(180+Math.min(j.combo,10)*12)+'ms');$('combo').classList.remove('pulse');void $('combo').offsetWidth;$('combo').classList.add('pulse');}
   updateHUD();
 }
+function recordRun(reason){
+  if(state.runRecorded)return;
+  state.runRecorded=true;state.records.runs.push({score:state.score,round:state.round,combo:state.bestCombo,at:Date.now(),reason});
+  if(!Records.save(state.records))$('footer-note').textContent='存储不可用，纪录仅在本次会话保留。';
+}
+function goHome(){
+  if(['playing','reveal','paused'].includes(state.phase))recordRun('退出');
+  helpPaused=false;leaderboardPaused=false;$('help').close();$('leaderboard').close();resetInput();
+  Object.assign(state,{phase:'home',cut:null,judgment:null,poly:ShapeGenerator.generate(6)});document.body.classList.remove('perfect');
+  $('intro').hidden=false;$('end').hidden=true;$('workspace').hidden=false;$('workspace').classList.remove('play');$('hud').hidden=true;$('play-bottom').hidden=true;
+  $('home-marker').hidden=false;$('home-caption').hidden=false;$('board-code').hidden=false;$('paused').hidden=true;$('instruction').hidden=true;$('reveal').className='reveal';
+  $('board-tag').textContent='图 01 / 寻找平衡';resize();$('start').focus({preventScroll:true});
+}
+function showLeaderboard(){
+  leaderboardPaused=['playing','reveal'].includes(state.phase);if(leaderboardPaused)pause();
+  const runs=state.records.runs.slice().sort((a,b)=>b.score-a.score||b.round-a.round||b.combo-a.combo||b.at-a.at);
+  $('rank-summary').textContent=runs.length?`已记录 ${runs.length} 次挑战 · 展示前 10 名`:'还没有挑战记录，开始你的第一局。';
+  if(!Records.available)$('rank-summary').textContent+=' · 存储不可用，仅本次会话保留';
+  $('rank-list').replaceChildren();runs.slice(0,10).forEach((run,index)=>{
+    const row=document.createElement('li'),rank=document.createElement('span'),details=document.createElement('div'),note=document.createElement('small'),score=document.createElement('strong');
+    rank.className='rank';rank.textContent=String(index+1).padStart(2,'0');details.textContent=`第 ${run.round} 回合 · 连击 ×${run.combo}`;note.textContent=new Date(run.at).toLocaleString('zh-CN')+' · '+run.reason;score.textContent=run.score.toLocaleString('zh-CN');details.append(note);row.append(rank,details,score);$('rank-list').append(row);
+  });$('leaderboard').showModal();
+}
 function finishRun(){
+  recordRun('结束');
   state.phase='over';resetInput();document.body.classList.remove('perfect');$('workspace').hidden=true;$('hud').hidden=true;$('play-bottom').hidden=true;$('end').hidden=false;
   $('final-score').textContent=state.score.toLocaleString('zh-CN');$('final-best').textContent=state.records.score.toLocaleString('zh-CN');$('final-round').textContent=String(state.round).padStart(2,'0');
   $('final-combo').textContent=`${state.bestCombo} / ${state.records.combo}`;$('final-cut').textContent=state.bestCut?`${state.bestCut.percent.toFixed(1)} / ${(100-state.bestCut.percent).toFixed(1)}`:'尚无有效切割';
@@ -473,11 +592,14 @@ function resume(){
   $('paused').hidden=true;updateHUD();canvas.focus({preventScroll:true});
 }
 function showHelp(){helpPaused=['playing','reveal'].includes(state.phase);if(helpPaused)pause();$('help').showModal();}
+$('leaderboard').addEventListener('close',()=>{if(leaderboardPaused&&state.phase==='paused'&&!document.hidden)resume();leaderboardPaused=false;});
+$('leaderboard-button').addEventListener('click',showLeaderboard);$('leaderboard-close').addEventListener('click',()=>$('leaderboard').close());$('leaderboard-done').addEventListener('click',()=>$('leaderboard').close());
+$('exit-button').addEventListener('click',goHome);$('home-button').addEventListener('click',goHome);
 $('help').addEventListener('close',()=>{if(helpPaused&&state.phase==='paused'&&!document.hidden)resume();helpPaused=false;});
 $('start').addEventListener('click',startRun);$('retry').addEventListener('click',startRun);$('pause-button').addEventListener('click',pause);$('resume').addEventListener('click',resume);
 $('help-button').addEventListener('click',showHelp);$('help-close').addEventListener('click',()=>$('help').close());$('help-done').addEventListener('click',()=>$('help').close());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('help').open){if(['playing','reveal'].includes(state.phase)){e.preventDefault();pause();}else if(state.phase==='paused'){e.preventDefault();resume();}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('help').open&&!$('leaderboard').open){if(['playing','reveal'].includes(state.phase)){e.preventDefault();pause();}else if(state.phase==='paused'){e.preventDefault();resume();}}});
 canvas.addEventListener('pointerdown',e=>{
   if(state.phase!=='playing'||input.pointerId!==null||!e.isPrimary||e.button!==0)return;
   if(performance.now()>=state.deadline){settle(null,performance.now());return;}
@@ -504,7 +626,15 @@ canvas.addEventListener('keydown',e=>{
   if(e.key==='Enter'){const a=input.a,b=input.b;resetInput();submitCut(a,b);}
 });
 const Renderer={
-  polygon(poly,color,dx=0,dy=0){ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p.x+dx,p.y+dy):ctx.moveTo(p.x+dx,p.y+dy));ctx.closePath();ctx.fillStyle=color;ctx.fill();},
+  parts(parts,color,dx=0,dy=0){ctx.beginPath();for(const poly of parts){poly.forEach((p,i)=>i?ctx.lineTo(p.x+dx,p.y+dy):ctx.moveTo(p.x+dx,p.y+dy));ctx.closePath();}ctx.fillStyle=color;ctx.fill();},
+  polygon(poly,color,dx=0,dy=0){this.parts([poly],color,dx,dy);},
+  fireworks(now){
+    if(reducedMotion.matches||state.phase!=='reveal'||state.judgment?.verdict!=='PERFECT')return;
+    const elapsed=(now-state.revealAt)/1000;ctx.save();ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
+    const bursts=[[.18,.24,0],[.82,.26,.12],[.72,.78,.25]];
+    for(const [x,y,delay] of bursts){const t=elapsed-.16-delay;if(t<0||t>1.05)continue;ctx.globalAlpha=.65*(1-t/1.05);for(let i=0;i<12;i++){const angle=i*Math.PI/6+delay*3,distance=(1-Math.exp(-t*4))*Math.min(view.width*.13,64),px=x*view.width+Math.cos(angle)*distance,py=y*view.height+Math.sin(angle)*distance+t*t*12;ctx.strokeStyle=['#D66347','#526b52','#b59a62'][i%3];ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px-Math.cos(angle)*4,py-Math.sin(angle)*4);ctx.stroke();}}
+    ctx.restore();
+  },
   line(a,b,color,width=2,dash=[]){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);},
   draw(now){
     ctx.setTransform(view.dpr,0,0,view.dpr,0,0);ctx.clearRect(0,0,view.width,view.height);ctx.translate(view.x,view.y);ctx.scale(view.scale,view.scale);
@@ -512,8 +642,8 @@ const Renderer={
       const t=reducedMotion.matches?0:Math.sin(now/2200)*7;
       const a={x:200,y:180},b={x:800,y:595},cut=Geometry.split(state.poly,a,b);
       if(!cut){this.polygon(state.poly,'#252525');return;}
-      this.polygon(cut.left,'#252525',-9-t,13+t);this.polygon(cut.right,'#D66347',9+t,-13-t);
-      const ends=Geometry.intersections(state.poly,a,b);if(ends.length===2)this.line(ends[0],ends[1],'#8B837A',1,[5,7]);
+      this.parts(cut.leftParts,'#252525',-9-t,13+t);this.parts(cut.rightParts,'#D66347',9+t,-13-t);
+      for(const [p,q] of Geometry.segments(state.poly,a,b))this.line(p,q,'#70685F',1,[5,7]);
       return;
     }
     if(state.phase==='over')return;
@@ -522,19 +652,18 @@ const Renderer={
       const duration=reducedMotion.matches?1:650,p=Math.min(1,Math.max(0,(now-state.revealAt-100)/duration)),ease=1-(1-p)**3;
       const length=Math.hypot(cut.b.x-cut.a.x,cut.b.y-cut.a.y),nx=-(cut.b.y-cut.a.y)/length,ny=(cut.b.x-cut.a.x)/length;
       const shift=Math.min(state.judgment.verdict==='PERFECT'?58:25,20/view.scale)*ease;
-      this.polygon(cut.left,'#252525',nx*shift,ny*shift);this.polygon(cut.right,'#D66347',-nx*shift,-ny*shift);
-      const ends=Geometry.intersections(state.poly,cut.a,cut.b);
-      if(ends.length===2)this.line(ends[0],ends[1],state.judgment.verdict==='PERFECT'?'#526b52':'#8B837A',1,[4,7]);
+      this.parts(cut.leftParts,'#252525',nx*shift,ny*shift);this.parts(cut.rightParts,'#D66347',-nx*shift,-ny*shift);
+      for(const [p,q] of Geometry.segments(state.poly,cut.a,cut.b))this.line(p,q,state.judgment.verdict==='PERFECT'?'#526b52':'#70685F',1,[4,7]);
       if(state.judgment.verdict==='PERFECT'&&ease>.2){
         ctx.globalAlpha=.5*ease;this.line({x:185,y:105},{x:245,y:105},'#526b52',2);this.line({x:755,y:695},{x:815,y:695},'#526b52',2);ctx.globalAlpha=1;
       }
     }else{
       this.polygon(state.poly,'#252525');
       if(input.a&&input.b&&Math.hypot(input.a.x-input.b.x,input.a.y-input.b.y)>1){
-        const ends=Geometry.intersections(state.poly,input.a,input.b);
-        if(ends.length===2){
-          this.line(ends[0],ends[1],'#D66347',2.5/view.scale);
-          for(const p of ends){ctx.beginPath();ctx.arc(p.x,p.y,3.5/view.scale,0,Math.PI*2);ctx.fillStyle='#D66347';ctx.fill();}
+        const segments=Geometry.segments(state.poly,input.a,input.b);
+        if(segments.length){
+          for(const [p,q] of segments)this.line(p,q,'#D66347',2.5/view.scale);
+          for(const p of segments.flat()){ctx.beginPath();ctx.arc(p.x,p.y,3.5/view.scale,0,Math.PI*2);ctx.fillStyle='#D66347';ctx.fill();}
         }else{this.line(input.a,input.b,'#D66347',1.5/view.scale,[4/view.scale,5/view.scale]);}
       }
     }
@@ -548,13 +677,13 @@ function tick(now){
   }
   if(state.phase==='playing'||state.phase==='reveal'||state.phase==='paused'){
     const text=state.remaining.toFixed(1)+'秒';if(text!==lastTimerText){$('time').textContent=text;lastTimerText=text;$('timer').setAttribute('aria-valuenow',state.remaining.toFixed(1));}
-    $('time-bar').style.transform=`scaleX(${state.remaining/state.difficulty.seconds})`;$('clock').classList.toggle('urgent',state.remaining<4);
+    $('time-bar').style.transform=`scaleX(${state.remaining/state.difficulty.seconds})`;$('clock').classList.toggle('urgent',state.remaining<=Math.min(3,state.difficulty.seconds*.4));
   }
   if(state.phase==='reveal'){
     if(now-state.revealAt>160)$('reveal').classList.add('visible');
     if(now-state.revealAt>state.revealDuration){if(state.lives===0)finishRun();else{state.round++;nextRound();}}
   }
-  Renderer.draw(now);requestAnimationFrame(tick);
+  Renderer.draw(now);Renderer.fireworks(now);requestAnimationFrame(tick);
 }
 new ResizeObserver(resize).observe(canvas);window.addEventListener('resize',resize);
 updateHUD();resize();requestAnimationFrame(tick);

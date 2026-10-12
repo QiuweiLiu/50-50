@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "说明": "固定切法反破解验证：直接读取 index.html 的 Geometry 与 ShapeGenerator，使用真实面积裁剪统计固定策略通过率。baseline 是生成器修改前的实测结果；current 由 --record-current 写入。",
-  "记录时间": "2026-10-12T15:20:48.959+08:00",
+  "说明": "固定切法反破解验证：直接读取 index.html 的 Geometry 与 ShapeGenerator，使用真实面积裁剪统计固定策略通过率。baseline 是生成器修改前的实测结果；current 由 --record-current 写入。曲线轮廓采用二次贝塞尔圆角采样，生产密度为每段 6 点，几何测试用 6/12 点交叉验证。",
+  "记录时间": "2026-10-12T15:05:45.338Z",
   "source": {
     "file": "index.html",
     "geometryScript": "geometry",
@@ -11,6 +11,22 @@
   },
   "sampleCount": 1000,
   "容差": "ShapeGenerator.difficulty(round).tolerance",
+  "曲线采样": {
+    "生产采样点": 6,
+    "收敛对照采样点": 12,
+    "收敛阈值": "同一切线面积百分比差小于 0.1 个百分点",
+    "动物轮廓": [
+      "猫",
+      "鸟",
+      "鲸",
+      "鱼"
+    ]
+  },
+  "难度": {
+    "第1至3回合": "12秒，容差6",
+    "第4至8回合": "9秒，容差4",
+    "第9回合起": "max(4.5, 7.5 - (回合 - 9) × 0.16)秒，容差3"
+  },
   "strategies": {
     "vertical": {
       "说明": "固定竖切：x=500"
@@ -33,10 +49,10 @@
     "maxPooledPassRate": 0.7,
     "minimumBaselineGap": 0.2,
     "requiredVertexRange": [
-      5,
-      8
+      64,
+      160
     ],
-    "maxConservationError": 1e-06
+    "maxConservationError": 0.000001
   },
   "baseline": {
     "configs": [
@@ -343,80 +359,87 @@
     ]
   },
   "current": {
-    "recordedAt": "2026-10-12T07:31:37.321Z",
+    "recordedAt": "2026-10-12T15:05:45.338Z",
     "configs": [
       {
         "round": 9,
         "seed": 5279753,
         "difficulty": {
-          "tolerance": 5,
-          "seconds": 13
+          "tolerance": 3,
+          "seconds": 7.5
         },
         "generator": {
           "valid": 1000,
           "invalid": 0,
           "vertices": {
-            "5": 247,
-            "6": 236,
-            "7": 253,
-            "8": 264
+            "72": 244,
+            "84": 228,
+            "90": 277,
+            "126": 251
           },
-          "conservationMaxAbs": 8.731149137020111e-11,
+          "conservationMaxAbs": 3.4924596548080444e-10,
           "conservationFailures": 0,
-          "areaMin": 110989.10078115904,
-          "areaMax": 221204.62875225674,
-          "fiftySolutionFailures": 0
+          "areaMin": 73856.71637125679,
+          "areaMax": 116725.203336299,
+          "fiftySolutionChecked": 1000,
+          "fiftySolutionFailures": 0,
+          "kinds": {
+            "鸟": 277,
+            "鲸": 228,
+            "鱼": 244,
+            "猫": 251
+          }
         },
         "strategies": {
           "vertical": {
-            "passed": 369,
+            "passed": 157,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.369,
-            "passRateAmongSplits": 0.369,
-            "errorMean": 6.857139478493218,
-            "errorP95": 13.09138710800218,
-            "errorMax": 16.520640393579598
+            "passRate": 0.157,
+            "passRateAmongSplits": 0.157,
+            "errorMean": 7.035616418740341,
+            "errorP95": 12.178892711052931,
+            "errorMax": 15.202219074818174
           },
           "horizontal": {
-            "passed": 348,
+            "passed": 134,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.348,
-            "passRateAmongSplits": 0.348,
-            "errorMean": 6.86851611871399,
-            "errorP95": 13.322749303096472,
-            "errorMax": 15.49026500408145
+            "passRate": 0.134,
+            "passRateAmongSplits": 0.134,
+            "errorMean": 7.37195854865742,
+            "errorP95": 13.065309207812241,
+            "errorMax": 15.202025000934341
           },
           "randomAngle": {
-            "passed": 481,
+            "passed": 189,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.481,
-            "passRateAmongSplits": 0.481,
-            "errorMean": 5.946079453180763,
-            "errorP95": 14.777228791350268,
-            "errorMax": 20.928571617099834
+            "passRate": 0.189,
+            "passRateAmongSplits": 0.189,
+            "errorMean": 6.7666880053956,
+            "errorP95": 13.192737799186105,
+            "errorMax": 16.242028107910656
           },
           "bboxVertical": {
-            "passed": 369,
+            "passed": 157,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.369,
-            "passRateAmongSplits": 0.369,
-            "errorMean": 6.857139478493218,
-            "errorP95": 13.09138710800218,
-            "errorMax": 16.520640393579598
+            "passRate": 0.157,
+            "passRateAmongSplits": 0.157,
+            "errorMean": 7.035616418740341,
+            "errorP95": 12.178892711052931,
+            "errorMax": 15.202219074818174
           },
           "bboxHorizontal": {
-            "passed": 348,
+            "passed": 134,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.348,
-            "passRateAmongSplits": 0.348,
-            "errorMean": 6.86851611871399,
-            "errorP95": 13.322749303096472,
-            "errorMax": 15.49026500408145
+            "passRate": 0.134,
+            "passRateAmongSplits": 0.134,
+            "errorMean": 7.37195854865742,
+            "errorP95": 13.065309207812241,
+            "errorMax": 15.202025000934341
           }
         }
       },
@@ -424,74 +447,81 @@
         "round": 15,
         "seed": 5248277,
         "difficulty": {
-          "tolerance": 5,
-          "seconds": 11.32
+          "tolerance": 3,
+          "seconds": 6.54
         },
         "generator": {
           "valid": 1000,
           "invalid": 0,
           "vertices": {
-            "5": 280,
-            "6": 256,
-            "7": 234,
-            "8": 230
+            "72": 227,
+            "84": 242,
+            "90": 256,
+            "126": 275
           },
-          "conservationMaxAbs": 5.820766091346741e-11,
+          "conservationMaxAbs": 2.764863893389702e-10,
           "conservationFailures": 0,
-          "areaMin": 109070.17658278451,
-          "areaMax": 227500.99517193288,
-          "fiftySolutionFailures": 0
+          "areaMin": 74280.90196517455,
+          "areaMax": 119666.73848775376,
+          "fiftySolutionChecked": 1000,
+          "fiftySolutionFailures": 0,
+          "kinds": {
+            "猫": 275,
+            "鱼": 227,
+            "鲸": 242,
+            "鸟": 256
+          }
         },
         "strategies": {
           "vertical": {
-            "passed": 342,
+            "passed": 128,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.342,
-            "passRateAmongSplits": 0.342,
-            "errorMean": 7.006660526718291,
-            "errorP95": 13.053511774468959,
-            "errorMax": 15.863698863133841
+            "passRate": 0.128,
+            "passRateAmongSplits": 0.128,
+            "errorMean": 7.1861762980651145,
+            "errorP95": 12.596566019105552,
+            "errorMax": 15.201943789509151
           },
           "horizontal": {
-            "passed": 361,
+            "passed": 160,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.361,
-            "passRateAmongSplits": 0.361,
-            "errorMean": 6.923217026483842,
-            "errorP95": 13.225485358785882,
-            "errorMax": 16.02116812328967
+            "passRate": 0.16,
+            "passRateAmongSplits": 0.16,
+            "errorMean": 7.111001407143387,
+            "errorP95": 12.328713188724315,
+            "errorMax": 15.197039117991565
           },
           "randomAngle": {
-            "passed": 482,
+            "passed": 194,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.482,
-            "passRateAmongSplits": 0.482,
-            "errorMean": 5.899719541865403,
-            "errorP95": 13.883242557801104,
-            "errorMax": 20.15868309293269
+            "passRate": 0.194,
+            "passRateAmongSplits": 0.194,
+            "errorMean": 6.704346568574046,
+            "errorP95": 13.084172798049508,
+            "errorMax": 15.464670619438124
           },
           "bboxVertical": {
-            "passed": 342,
+            "passed": 128,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.342,
-            "passRateAmongSplits": 0.342,
-            "errorMean": 7.006660526718291,
-            "errorP95": 13.053511774468959,
-            "errorMax": 15.863698863133841
+            "passRate": 0.128,
+            "passRateAmongSplits": 0.128,
+            "errorMean": 7.1861762980651145,
+            "errorP95": 12.596566019105552,
+            "errorMax": 15.201943789509151
           },
           "bboxHorizontal": {
-            "passed": 361,
+            "passed": 160,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.361,
-            "passRateAmongSplits": 0.361,
-            "errorMean": 6.923217026483842,
-            "errorP95": 13.225485358785882,
-            "errorMax": 16.02116812328967
+            "passRate": 0.16,
+            "passRateAmongSplits": 0.16,
+            "errorMean": 7.111001407143387,
+            "errorP95": 12.328713188724315,
+            "errorMax": 15.197039117991565
           }
         }
       },
@@ -499,74 +529,81 @@
         "round": 30,
         "seed": 5255216,
         "difficulty": {
-          "tolerance": 5,
-          "seconds": 7.119999999999999
+          "tolerance": 3,
+          "seconds": 4.5
         },
         "generator": {
           "valid": 1000,
           "invalid": 0,
           "vertices": {
-            "5": 247,
-            "6": 262,
-            "7": 248,
-            "8": 243
+            "72": 274,
+            "84": 231,
+            "90": 253,
+            "126": 242
           },
-          "conservationMaxAbs": 8.731149137020111e-11,
+          "conservationMaxAbs": 2.0372681319713593e-10,
           "conservationFailures": 0,
-          "areaMin": 115760.35801058754,
-          "areaMax": 215693.60231459598,
-          "fiftySolutionFailures": 0
+          "areaMin": 74704.57146716253,
+          "areaMax": 120448.90984283792,
+          "fiftySolutionChecked": 1000,
+          "fiftySolutionFailures": 0,
+          "kinds": {
+            "鱼": 274,
+            "猫": 242,
+            "鸟": 253,
+            "鲸": 231
+          }
         },
         "strategies": {
           "vertical": {
-            "passed": 333,
+            "passed": 151,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.333,
-            "passRateAmongSplits": 0.333,
-            "errorMean": 7.173224784055215,
-            "errorP95": 13.367237164861464,
-            "errorMax": 16.600436888334926
+            "passRate": 0.151,
+            "passRateAmongSplits": 0.151,
+            "errorMean": 7.224276420659117,
+            "errorP95": 12.279385743927598,
+            "errorMax": 15.201281032413846
           },
           "horizontal": {
-            "passed": 339,
+            "passed": 119,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.339,
-            "passRateAmongSplits": 0.339,
-            "errorMean": 7.077800610549423,
-            "errorP95": 13.036534455732394,
-            "errorMax": 17.239279730142776
+            "passRate": 0.119,
+            "passRateAmongSplits": 0.119,
+            "errorMean": 7.496265215778518,
+            "errorP95": 13.11839785783146,
+            "errorMax": 15.171758136637862
           },
           "randomAngle": {
-            "passed": 490,
+            "passed": 198,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.49,
-            "passRateAmongSplits": 0.49,
-            "errorMean": 6.043148795889092,
-            "errorP95": 14.407983407063796,
-            "errorMax": 21.695446996705677
+            "passRate": 0.198,
+            "passRateAmongSplits": 0.198,
+            "errorMean": 6.771976817879762,
+            "errorP95": 12.711099054499911,
+            "errorMax": 16.11283992918736
           },
           "bboxVertical": {
-            "passed": 333,
+            "passed": 151,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.333,
-            "passRateAmongSplits": 0.333,
-            "errorMean": 7.173224784055215,
-            "errorP95": 13.367237164861464,
-            "errorMax": 16.600436888334926
+            "passRate": 0.151,
+            "passRateAmongSplits": 0.151,
+            "errorMean": 7.224276420659117,
+            "errorP95": 12.279385743927598,
+            "errorMax": 15.201281032413846
           },
           "bboxHorizontal": {
-            "passed": 339,
+            "passed": 119,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.339,
-            "passRateAmongSplits": 0.339,
-            "errorMean": 7.077800610549423,
-            "errorP95": 13.036534455732394,
-            "errorMax": 17.239279730142776
+            "passRate": 0.119,
+            "passRateAmongSplits": 0.119,
+            "errorMean": 7.496265215778518,
+            "errorP95": 13.11839785783146,
+            "errorMax": 15.171758136637862
           }
         }
       },
@@ -574,74 +611,393 @@
         "round": 60,
         "seed": 5267552,
         "difficulty": {
-          "tolerance": 5,
-          "seconds": 7
+          "tolerance": 3,
+          "seconds": 4.5
         },
         "generator": {
           "valid": 1000,
           "invalid": 0,
           "vertices": {
-            "5": 237,
-            "6": 260,
-            "7": 266,
-            "8": 237
+            "72": 232,
+            "84": 265,
+            "90": 260,
+            "126": 243
           },
-          "conservationMaxAbs": 8.731149137020111e-11,
+          "conservationMaxAbs": 2.6193447411060333e-10,
           "conservationFailures": 0,
-          "areaMin": 113070.28499728665,
-          "areaMax": 228577.0856389286,
+          "areaMin": 74996.94050418971,
+          "areaMax": 118803.17486134963,
+          "fiftySolutionChecked": 1000,
+          "fiftySolutionFailures": 0,
+          "kinds": {
+            "鲸": 265,
+            "鸟": 260,
+            "鱼": 232,
+            "猫": 243
+          }
+        },
+        "strategies": {
+          "vertical": {
+            "passed": 122,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.122,
+            "passRateAmongSplits": 0.122,
+            "errorMean": 7.158906497470026,
+            "errorP95": 11.999363769777261,
+            "errorMax": 15.200765017067042
+          },
+          "horizontal": {
+            "passed": 146,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.146,
+            "passRateAmongSplits": 0.146,
+            "errorMean": 7.11605289880454,
+            "errorP95": 12.405079154121964,
+            "errorMax": 15.201290097663517
+          },
+          "randomAngle": {
+            "passed": 206,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.206,
+            "passRateAmongSplits": 0.206,
+            "errorMean": 6.683070728102405,
+            "errorP95": 13.341836228503176,
+            "errorMax": 15.704941079324641
+          },
+          "bboxVertical": {
+            "passed": 122,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.122,
+            "passRateAmongSplits": 0.122,
+            "errorMean": 7.158906497470026,
+            "errorP95": 11.999363769777261,
+            "errorMax": 15.200765017067042
+          },
+          "bboxHorizontal": {
+            "passed": 146,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.146,
+            "passRateAmongSplits": 0.146,
+            "errorMean": 7.11605289880454,
+            "errorP95": 12.405079154121964,
+            "errorMax": 15.201290097663517
+          }
+        }
+      }
+    ]
+  },
+  "sameToleranceBaseline": {
+    "说明": "旧生成器在同一当前容差 3 下的重放，仅用于公平比较；原始容差 5 baseline 保留不变。",
+    "sourceCommit": "4d1abf970bceb2503ad08fb1f7164333c04b6793",
+    "toleranceOverride": 3,
+    "sampleCount": 1000,
+    "configs": [
+      {
+        "round": 9,
+        "seed": 5279753,
+        "difficulty": {
+          "tolerance": 3,
+          "seconds": 7.5
+        },
+        "generator": {
+          "valid": 1000,
+          "invalid": 0,
+          "vertices": {
+            "5": 255,
+            "6": 252,
+            "7": 238,
+            "8": 255
+          },
+          "conservationMaxAbs": 5.820766091346741e-11,
+          "conservationFailures": 0,
+          "areaMin": 118434.53449226172,
+          "areaMax": 209911.61742324615,
+          "fiftySolutionChecked": 0,
           "fiftySolutionFailures": 0
         },
         "strategies": {
           "vertical": {
-            "passed": 344,
+            "passed": 928,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.344,
-            "passRateAmongSplits": 0.344,
-            "errorMean": 6.8740711772943595,
-            "errorP95": 13.044012088369406,
-            "errorMax": 15.538497851892245
+            "passRate": 0.928,
+            "passRateAmongSplits": 0.928,
+            "errorMean": 1.1042238293569386,
+            "errorP95": 3.4188692325710974,
+            "errorMax": 6.232224978895118
           },
           "horizontal": {
-            "passed": 370,
+            "passed": 911,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.37,
-            "passRateAmongSplits": 0.37,
-            "errorMean": 6.675070785781359,
-            "errorP95": 13.003796587906017,
-            "errorMax": 15.031067915730084
+            "passRate": 0.911,
+            "passRateAmongSplits": 0.911,
+            "errorMean": 1.1606803252738778,
+            "errorP95": 3.5845244800877794,
+            "errorMax": 7.512460994444169
           },
           "randomAngle": {
-            "passed": 494,
+            "passed": 916,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.494,
-            "passRateAmongSplits": 0.494,
-            "errorMean": 5.856002462297931,
-            "errorP95": 13.935141222384075,
-            "errorMax": 22.057336059631165
+            "passRate": 0.916,
+            "passRateAmongSplits": 0.916,
+            "errorMean": 1.1289867189345713,
+            "errorP95": 3.418722250896309,
+            "errorMax": 6.04774185939695
           },
           "bboxVertical": {
-            "passed": 344,
+            "passed": 738,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.344,
-            "passRateAmongSplits": 0.344,
-            "errorMean": 6.8740711772943595,
-            "errorP95": 13.044012088369406,
-            "errorMax": 15.538497851892245
+            "passRate": 0.738,
+            "passRateAmongSplits": 0.738,
+            "errorMean": 2.1923398017203573,
+            "errorP95": 6.30926435943536,
+            "errorMax": 15.03666192535745
           },
           "bboxHorizontal": {
-            "passed": 370,
+            "passed": 749,
             "splitCount": 1000,
             "missed": 0,
-            "passRate": 0.37,
-            "passRateAmongSplits": 0.37,
-            "errorMean": 6.675070785781359,
-            "errorP95": 13.003796587906017,
-            "errorMax": 15.031067915730084
+            "passRate": 0.749,
+            "passRateAmongSplits": 0.749,
+            "errorMean": 2.190616881202906,
+            "errorP95": 6.570517608692342,
+            "errorMax": 13.507096591498325
+          }
+        }
+      },
+      {
+        "round": 15,
+        "seed": 5248277,
+        "difficulty": {
+          "tolerance": 3,
+          "seconds": 6.54
+        },
+        "generator": {
+          "valid": 1000,
+          "invalid": 0,
+          "vertices": {
+            "5": 297,
+            "6": 234,
+            "7": 233,
+            "8": 236
+          },
+          "conservationMaxAbs": 8.731149137020111e-11,
+          "conservationFailures": 0,
+          "areaMin": 119364.56417746766,
+          "areaMax": 210070.92162339034,
+          "fiftySolutionChecked": 0,
+          "fiftySolutionFailures": 0
+        },
+        "strategies": {
+          "vertical": {
+            "passed": 912,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.912,
+            "passRateAmongSplits": 0.912,
+            "errorMean": 1.191087794095877,
+            "errorP95": 3.665944018038523,
+            "errorMax": 6.219091385064161
+          },
+          "horizontal": {
+            "passed": 917,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.917,
+            "passRateAmongSplits": 0.917,
+            "errorMean": 1.1873103333125823,
+            "errorP95": 3.418381565128847,
+            "errorMax": 7.417557487038984
+          },
+          "randomAngle": {
+            "passed": 925,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.925,
+            "passRateAmongSplits": 0.925,
+            "errorMean": 1.1766757985826455,
+            "errorP95": 3.440162126239713,
+            "errorMax": 6.866605402008169
+          },
+          "bboxVertical": {
+            "passed": 712,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.712,
+            "passRateAmongSplits": 0.712,
+            "errorMean": 2.3466809918371605,
+            "errorP95": 7.1381917299809885,
+            "errorMax": 14.434055740750104
+          },
+          "bboxHorizontal": {
+            "passed": 721,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.721,
+            "passRateAmongSplits": 0.721,
+            "errorMean": 2.333967946004934,
+            "errorP95": 6.811109957338104,
+            "errorMax": 14.73481786288643
+          }
+        }
+      },
+      {
+        "round": 30,
+        "seed": 5255216,
+        "difficulty": {
+          "tolerance": 3,
+          "seconds": 4.5
+        },
+        "generator": {
+          "valid": 1000,
+          "invalid": 0,
+          "vertices": {
+            "5": 248,
+            "6": 265,
+            "7": 268,
+            "8": 219
+          },
+          "conservationMaxAbs": 8.731149137020111e-11,
+          "conservationFailures": 0,
+          "areaMin": 117333.2434591284,
+          "areaMax": 209718.0274444154,
+          "fiftySolutionChecked": 0,
+          "fiftySolutionFailures": 0
+        },
+        "strategies": {
+          "vertical": {
+            "passed": 920,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.92,
+            "passRateAmongSplits": 0.92,
+            "errorMean": 1.1462451633521091,
+            "errorP95": 3.458910270619974,
+            "errorMax": 6.723054958154961
+          },
+          "horizontal": {
+            "passed": 928,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.928,
+            "passRateAmongSplits": 0.928,
+            "errorMean": 1.0886245922236317,
+            "errorP95": 3.4141129495012805,
+            "errorMax": 5.977860428267675
+          },
+          "randomAngle": {
+            "passed": 917,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.917,
+            "passRateAmongSplits": 0.917,
+            "errorMean": 1.171814462306165,
+            "errorP95": 3.5271791735227467,
+            "errorMax": 6.655457222123843
+          },
+          "bboxVertical": {
+            "passed": 741,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.741,
+            "passRateAmongSplits": 0.741,
+            "errorMean": 2.1677415480521804,
+            "errorP95": 6.3174687426420135,
+            "errorMax": 13.15716161353889
+          },
+          "bboxHorizontal": {
+            "passed": 746,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.746,
+            "passRateAmongSplits": 0.746,
+            "errorMean": 2.2037370987400893,
+            "errorP95": 6.5878524800205085,
+            "errorMax": 17.335730713839894
+          }
+        }
+      },
+      {
+        "round": 60,
+        "seed": 5267552,
+        "difficulty": {
+          "tolerance": 3,
+          "seconds": 4.5
+        },
+        "generator": {
+          "valid": 1000,
+          "invalid": 0,
+          "vertices": {
+            "5": 271,
+            "6": 240,
+            "7": 227,
+            "8": 262
+          },
+          "conservationMaxAbs": 8.731149137020111e-11,
+          "conservationFailures": 0,
+          "areaMin": 115453.57369329366,
+          "areaMax": 211546.1278639784,
+          "fiftySolutionChecked": 0,
+          "fiftySolutionFailures": 0
+        },
+        "strategies": {
+          "vertical": {
+            "passed": 916,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.916,
+            "passRateAmongSplits": 0.916,
+            "errorMean": 1.1893396607074973,
+            "errorP95": 3.4274461311591367,
+            "errorMax": 6.0717898430381325
+          },
+          "horizontal": {
+            "passed": 904,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.904,
+            "passRateAmongSplits": 0.904,
+            "errorMean": 1.1632425351733087,
+            "errorP95": 3.6588676086953456,
+            "errorMax": 6.738970942359359
+          },
+          "randomAngle": {
+            "passed": 909,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.909,
+            "passRateAmongSplits": 0.909,
+            "errorMean": 1.1603079854489347,
+            "errorP95": 3.6935219307265967,
+            "errorMax": 6.715620598428508
+          },
+          "bboxVertical": {
+            "passed": 738,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.738,
+            "passRateAmongSplits": 0.738,
+            "errorMean": 2.279697455287411,
+            "errorP95": 7.130777450241489,
+            "errorMax": 14.332127954721429
+          },
+          "bboxHorizontal": {
+            "passed": 752,
+            "splitCount": 1000,
+            "missed": 0,
+            "passRate": 0.752,
+            "passRateAmongSplits": 0.752,
+            "errorMean": 2.1753186604972807,
+            "errorP95": 6.530291176291328,
+            "errorMax": 16.827580801692676
           }
         }
       }

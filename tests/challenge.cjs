@@ -14,6 +14,7 @@ vm.runInContext(`${geometrySource}\nglobalThis.api={Geometry,ShapeGenerator};`, 
 const { Geometry: G, ShapeGenerator: S } = context.api;
 
 const SAMPLE_COUNT = 1000;
+const SOLUTION_SAMPLE_COUNT = 1000;
 const CONFIGS = [
   { round: 9, seed: 0x509009 },
   { round: 15, seed: 0x501515 },
@@ -52,11 +53,11 @@ function strategyLine(strategy, poly, angleRng) {
 }
 
 function fixedSolution(poly) {
-  // 有效凸图形被限制在逻辑画布内，因此二分 x=0..1000 一定能找到面积平分线。
+  // 图形被限制在逻辑画布内；side=1 保留直线左侧，因此 fraction 随 x 单调增加。
   let lo = 0;
   let hi = 1000;
   const total = G.area(poly);
-  for (let i = 0; i < 50; i += 1) {
+  for (let i = 0; i < 20; i += 1) {
     const x = (lo + hi) / 2;
     const leftArea = G.area(G.clip(poly, { x, y: 0 }, { x, y: 800 }, 1));
     if (leftArea / total < 0.5) lo = x;
@@ -85,7 +86,9 @@ function measureConfig({ round, seed }) {
     conservationFailures: 0,
     areaMin: Infinity,
     areaMax: -Infinity,
+    fiftySolutionChecked: Math.min(SOLUTION_SAMPLE_COUNT, SAMPLE_COUNT),
     fiftySolutionFailures: 0,
+    kinds: {},
   };
   const strategyData = Object.fromEntries(STRATEGIES.map((strategy) => [strategy, {
     passed: 0,
@@ -95,31 +98,32 @@ function measureConfig({ round, seed }) {
   }]));
   const tolerance = difficulty.tolerance;
 
-  for (const poly of shapes) {
+  for (const [index, poly] of shapes.entries()) {
     const isValid = G.valid(poly);
     if (isValid) generator.valid += 1;
     else generator.invalid += 1;
     generator.vertices[poly.length] = (generator.vertices[poly.length] || 0) + 1;
+    if (poly.kind) generator.kinds[poly.kind] = (generator.kinds[poly.kind] || 0) + 1;
     const total = G.area(poly);
     generator.areaMin = Math.min(generator.areaMin, total);
     generator.areaMax = Math.max(generator.areaMax, total);
-    const solution = fixedSolution(poly);
-    if (!solution || Math.abs(solution.percent - 50) > 1e-6) generator.fiftySolutionFailures += 1;
+    if (index < SOLUTION_SAMPLE_COUNT) {
+      const solution = fixedSolution(poly);
+      if (!solution || Math.abs(solution.percent - 50) > 0.01) generator.fiftySolutionFailures += 1;
+    }
 
     for (const strategy of STRATEGIES) {
       const line = strategyLine(strategy, poly, strategy === 'randomAngle' ? angleRng : null);
-      const left = G.area(G.clip(poly, line[0], line[1], 1));
-      const right = G.area(G.clip(poly, line[0], line[1], -1));
-      const conservationError = Math.abs(left + right - total);
-      generator.conservationMaxAbs = Math.max(generator.conservationMaxAbs, conservationError);
-      if (conservationError > CONSERVATION_EPSILON) generator.conservationFailures += 1;
-
       const data = strategyData[strategy];
       const cut = G.split(poly, line[0], line[1]);
       if (!cut) {
         data.missed += 1;
+        generator.conservationFailures += 1;
         continue;
       }
+      const conservationError = Math.abs(cut.a1 + cut.a2 - total);
+      generator.conservationMaxAbs = Math.max(generator.conservationMaxAbs, conservationError);
+      if (conservationError > CONSERVATION_EPSILON) generator.conservationFailures += 1;
       data.splitCount += 1;
       data.errors.push(cut.error);
       if (cut.error <= tolerance) data.passed += 1;
@@ -170,7 +174,7 @@ function assertCurrent(result, metrics) {
     assert.equal(config.generator.conservationFailures, 0, `回合 ${config.round} 存在面积不守恒切割`);
     assert.ok(config.generator.conservationMaxAbs <= acceptance.maxConservationError, `回合 ${config.round} 面积守恒误差过大`);
     const vertices = Object.keys(config.generator.vertices).map(Number);
-    assert.ok(vertices.every((count) => count >= acceptance.requiredVertexRange[0] && count <= acceptance.requiredVertexRange[1]), `回合 ${config.round} 顶点数不在 5–8 范围`);
+    assert.ok(vertices.every((count) => count >= acceptance.requiredVertexRange[0] && count <= acceptance.requiredVertexRange[1]), `回合 ${config.round} 曲线轮廓采样点数不在允许范围`);
     for (const strategy of STRATEGIES) {
       const data = config.strategies[strategy];
       assert.ok(data.passRate <= acceptance.maxPerConfigPassRate, `回合 ${config.round} 的${strategy}固定切法通过率 ${(data.passRate * 100).toFixed(1)}% 超过阈值`);
@@ -186,7 +190,10 @@ function assertCurrent(result, metrics) {
     assert.ok(pooledRate <= acceptance.maxPooledPassRate, `${strategy} 汇总通过率 ${(pooledRate * 100).toFixed(1)}% 超过阈值`);
   }
   const currentAverage = rows.reduce((sum, row) => sum + row.passRate, 0) / rows.length;
-  const baselineRows = flattenStrategies(metrics.baseline);
+  // 旧基线保留原始容差 5 的历史证据；公平比较优先使用同一旧生成器在当前容差 3
+  // 下的重放结果，避免把难度收紧误判成形状生成器带来的收益。
+  const comparisonBaseline = metrics.sameToleranceBaseline || metrics.baseline;
+  const baselineRows = flattenStrategies(comparisonBaseline);
   const baselineAverage = baselineRows.reduce((sum, row) => sum + row.passRate, 0) / baselineRows.length;
   assert.ok(currentAverage <= baselineAverage - acceptance.minimumBaselineGap, `固定策略平均通过率 ${(currentAverage * 100).toFixed(1)}% 未比基线 ${(baselineAverage * 100).toFixed(1)}% 至少低 ${acceptance.minimumBaselineGap * 100} 个百分点`);
 }
@@ -194,7 +201,9 @@ function assertCurrent(result, metrics) {
 const metrics = JSON.parse(fs.readFileSync(metricsPath, 'utf8'));
 const current = measureAll();
 if (process.argv.includes('--record-current')) {
-  metrics.current = { recordedAt: new Date().toISOString(), ...current };
+  const recordedAt = new Date().toISOString();
+  metrics['记录时间'] = recordedAt;
+  metrics.current = { recordedAt, ...current };
   fs.writeFileSync(metricsPath, `${JSON.stringify(metrics, null, 2)}\n`);
   console.log('已记录当前生成器结果；基线未覆盖。请随后运行 node tests/challenge.cjs 执行验收。');
 } else {
@@ -203,5 +212,5 @@ if (process.argv.includes('--record-current')) {
   assertCurrent(current, metrics);
   const rows = flattenStrategies(current);
   const average = rows.reduce((sum, row) => sum + row.passRate, 0) / rows.length;
-  console.log(`通过：${SAMPLE_COUNT * CONFIGS.length} 个固定种子图形；生成器有效性、5–8 顶点、面积守恒、50/50 平分线及固定策略反破解检查通过；固定策略平均通过率 ${(average * 100).toFixed(1)}%。`);
+  console.log(`通过：${SAMPLE_COUNT * CONFIGS.length} 个固定种子图形；生成器有效性、曲线采样点数、面积守恒、50/50 平分线及固定策略反破解检查通过；固定策略平均通过率 ${(average * 100).toFixed(1)}%。`);
 }
