@@ -7,13 +7,13 @@ const {chromium}=require(path.join(playwrightModules,'playwright'));
 const {pathToFileURL}=require('node:url');
 const root=path.resolve(__dirname,'..');
 const executablePath=process.env.CHROMIUM_EXECUTABLE_PATH||path.join(homedir(),'Library/Caches/ms-playwright/chromium-1181/chrome-mac/Chromium.app/Contents/MacOS/Chromium');
-const url=pathToFileURL(path.join(root,'index.html')).href;
+const url=process.env.GAME_URL||pathToFileURL(path.join(root,'index.html')).href;
 fs.mkdirSync(path.join(root,'outputs/browser'),{recursive:true});
 (async()=>{
  const browser=await chromium.launch({executablePath,headless:true});
  try{
   const context=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:2});
-  await context.setOffline(true);
+  if(!process.env.GAME_URL)await context.setOffline(true);
   const page=await context.newPage(),errors=[],external=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url());});
   await page.clock.install({time:new Date('2026-10-12T05:00:00Z')});await page.clock.pauseAt(new Date('2026-10-12T05:00:01Z'));await page.goto(url);await page.clock.runFor(50);
@@ -21,21 +21,23 @@ fs.mkdirSync(path.join(root,'outputs/browser'),{recursive:true});
   assert.equal(await page.locator('#start').isVisible(),true);assert.equal(await page.locator('html').getAttribute('lang'),'zh-CN');assert.ok((await page.locator('#start').textContent()).includes('开始挑战'));
   await page.locator('#start').click();await page.clock.runFor(50);
   assert.equal(await page.evaluate(()=>state.phase),'playing');
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'桌面游戏界面须完整显示在首屏');
+  assert.equal(await page.locator('#sound-button').getAttribute('aria-label'),'音效');assert.equal(await page.locator('#sound-button').getAttribute('aria-pressed'),'true');await page.locator('#sound-button').click();assert.equal(await page.locator('#sound-button').getAttribute('aria-pressed'),'false');assert.equal(await page.locator('#sound-button').getAttribute('aria-label'),'音效');await page.locator('#sound-button').click();
   const mapped=await page.evaluate(()=>{const r=canvas.getBoundingClientRect();return{rect:{x:r.x,y:r.y},scale:view.scale,x:view.x,y:view.y};});
   const screen=(x,y)=>({x:mapped.rect.x+mapped.x+x*mapped.scale,y:mapped.rect.y+mapped.y+y*mapped.scale});
   async function drag(a,b){await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:8});await page.mouse.up();}
   const short=screen(500,400);await drag(short,{x:short.x+3,y:short.y});
   assert.equal(await page.evaluate(()=>state.phase),'playing');assert.equal(await page.evaluate(()=>state.lives),3);
-  await drag(screen(10,20),screen(10,750));assert.equal(await page.evaluate(()=>state.phase),'playing');
-  await drag(screen(500,80),screen(500,720));
+  await drag({x:mapped.rect.x+8,y:mapped.rect.y+55},{x:mapped.rect.x+8,y:mapped.rect.y+120});assert.equal(await page.evaluate(()=>state.phase),'playing');
+  await drag(screen(500,220),screen(500,580));
   assert.equal(await page.evaluate(()=>state.phase),'reveal');assert.equal(await page.evaluate(()=>state.judgment.verdict),'PERFECT');
   assert.equal(await page.evaluate(()=>state.score),1000);assert.equal(await page.evaluate(()=>state.combo),1);assert.equal(await page.locator('#verdict').textContent(),'完美平分');
   await page.clock.runFor(750);await page.screenshot({path:path.join(root,'outputs/browser/desktop-perfect.png'),fullPage:true});
   await page.locator('#help-button').click();assert.equal(await page.evaluate(()=>state.phase),'paused');
   await page.clock.runFor(20000);assert.equal(await page.evaluate(()=>state.round),1);assert.equal(await page.evaluate(()=>state.lives),3);
   await page.locator('#help-done').click();await page.clock.runFor(50);assert.equal(await page.evaluate(()=>state.phase),'reveal');
-  const before=await page.evaluate(()=>state.score);await drag(screen(500,80),screen(500,720));assert.equal(await page.evaluate(()=>state.score),before);
-  await page.clock.runFor(1000);assert.equal(await page.evaluate(()=>state.round),2);
+  const before=await page.evaluate(()=>state.score);await drag(screen(500,220),screen(500,580));assert.equal(await page.evaluate(()=>state.score),before);
+  await page.clock.runFor(1200);assert.equal(await page.evaluate(()=>state.round),2);
   await page.screenshot({path:path.join(root,'outputs/browser/desktop-game.png'),fullPage:true});
   await page.locator('#pause-button').click();const remaining=await page.evaluate(()=>state.remaining);await page.clock.runFor(25000);assert.equal(await page.evaluate(()=>state.remaining),remaining);assert.equal(await page.evaluate(()=>state.lives),3);
   await page.locator('#resume').click();assert.equal(await page.evaluate(()=>state.phase),'playing');
@@ -53,15 +55,24 @@ fs.mkdirSync(path.join(root,'outputs/browser'),{recursive:true});
   await page.reload();await page.clock.runFor(50);assert.equal(await page.evaluate(()=>state.records.score),1000);
   await page.locator('#start').click();await page.clock.runFor(50);await page.locator('#canvas').focus();await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowUp');await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>state.phase),'reveal');
   assert.equal(await page.evaluate(()=>state.judgment.verdict),'PERFECT');
-  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
+  // 用真实鼠标在放大的后期图形上完成已知面积切割，验证逆变换与分级反馈。
+  for(const [target,verdict,css] of [[51,'EXCELLENT','excellent'],[54,'PASS','pass'],[62,'MISS','miss']]){
+   await page.evaluate(()=>{startRun();state.round=9;nextRound();});
+   const line=await page.evaluate(target=>{const ys=state.poly.map(p=>p.y),y1=Math.min(...ys)-12,y2=Math.max(...ys)+12;let low=140,high=860;for(let i=0;i<60;i++){const x=(low+high)/2,percent=Geometry.area(Geometry.clip(state.poly,{x,y:y1},{x,y:y2},true))/Geometry.area(state.poly)*100;if(percent<target)low=x;else high=x;}const x=(low+high)/2,r=canvas.getBoundingClientRect();return {a:{x:r.x+view.x+x*view.scale,y:r.y+view.y+y1*view.scale},b:{x:r.x+view.x+x*view.scale,y:r.y+view.y+y2*view.scale}};},target);
+   await drag(line.a,line.b);assert.equal(await page.evaluate(()=>state.judgment.verdict),verdict);assert.ok(Math.abs(await page.evaluate(()=>state.cut.percent)-target)<.01);assert.ok(await page.locator('#reveal').evaluate((el,css)=>el.classList.contains(css),css));
+   if(verdict==='MISS')assert.equal(await page.evaluate(()=>state.lives),2);
+  }
+  assert.deepEqual(errors,[]);if(!process.env.GAME_URL)assert.deepEqual(external,[]);
   // 验证真实触摸事件、手势取消、移动坐标映射与窗口缩放。
-  const mobile=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});await mobile.setOffline(true);
+  const mobile=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});if(!process.env.GAME_URL)await mobile.setOffline(true);
   const mp=await mobile.newPage();mp.on('pageerror',e=>errors.push(e.message));await mp.clock.install({time:new Date('2026-10-12T05:00:00Z')});await mp.clock.pauseAt(new Date('2026-10-12T05:00:01Z'));await mp.goto(url);await mp.clock.runFor(50);
   await mp.screenshot({path:path.join(root,'outputs/browser/mobile-home.png'),fullPage:true});
+  for(const size of [{width:320,height:568},{width:375,height:667},{width:390,height:844}]){await mp.setViewportSize(size);await mp.clock.runFor(50);assert.ok(await mp.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'手机首页应在首屏显示预览与按钮');}
+  await mp.setViewportSize({width:390,height:844});await mp.clock.runFor(50);
   assert.ok(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await mp.locator('#start').tap();await mp.clock.runFor(50);
   assert.ok(await mp.evaluate(()=>Math.abs(canvas.width-canvas.getBoundingClientRect().width*devicePixelRatio)<=1));
-  const coordinates=await mp.evaluate(()=>{const r=canvas.getBoundingClientRect();return{x:r.x+view.x+500*view.scale,y1:r.y+view.y+100*view.scale,y2:r.y+view.y+700*view.scale};});
+  const coordinates=await mp.evaluate(()=>{const r=canvas.getBoundingClientRect();return{x:r.x+view.x+500*view.scale,y1:r.y+view.y+220*view.scale,y2:r.y+view.y+580*view.scale};});
   const cdp=await mobile.newCDPSession(mp);
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:coordinates.x,y:coordinates.y1}]});
   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:coordinates.x,y:coordinates.y2}]});
@@ -69,7 +80,7 @@ fs.mkdirSync(path.join(root,'outputs/browser'),{recursive:true});
   assert.equal(await mp.evaluate(()=>state.judgment.verdict),'PERFECT');assert.equal(await mp.evaluate(()=>scrollY),0);
   await mp.clock.runFor(700);await mp.evaluate(()=>Renderer.draw(performance.now()));await mp.screenshot({path:path.join(root,'outputs/browser/mobile-perfect.png'),fullPage:true});
   assert.ok(await mp.evaluate(()=>{const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;let filled=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i])filled++;return filled>1000;}),'截图触发缩放后，手机画布仍须显示几何图形');
-  await mp.clock.runFor(1100);
+  await mp.clock.runFor(1200);
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:coordinates.x,y:coordinates.y1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
   assert.equal(await mp.evaluate(()=>input.pointerId),null);assert.equal(await mp.evaluate(()=>state.phase),'playing');assert.equal(await mp.evaluate(()=>state.lives),3);
   for(const size of [{width:320,height:568},{width:375,height:667},{width:768,height:1024},{width:844,height:390}]){
@@ -79,12 +90,12 @@ fs.mkdirSync(path.join(root,'outputs/browser'),{recursive:true});
    if(size.height>size.width&&size.width<=390)assert.ok(await mp.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),`尺寸 ${size.width}×${size.height} 的视口纵向溢出`);
    if(size.width===320)await mp.screenshot({path:path.join(root,'outputs/browser/mobile-small.png'),fullPage:true});
   }
-  const blocked=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});await blocked.setOffline(true);
+  const blocked=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});if(!process.env.GAME_URL)await blocked.setOffline(true);
   await blocked.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new DOMException('存储已禁用','SecurityError');}}));
   const bp=await blocked.newPage();bp.on('pageerror',e=>errors.push(e.message));await bp.clock.install({time:new Date('2026-10-12T05:00:00Z')});await bp.clock.pauseAt(new Date('2026-10-12T05:00:01Z'));await bp.goto(url);await bp.clock.runFor(50);await bp.locator('#start').click();
   await bp.locator('#canvas').focus();await bp.keyboard.press('Enter');assert.equal(await bp.evaluate(()=>state.score),1000);assert.equal(await bp.locator('#footer-note').textContent(),'存储不可用，纪录仅在本次会话保留。');
   await bp.clock.runFor(1150);assert.equal(await bp.evaluate(()=>state.round),2);
   assert.deepEqual(errors,[]);
-  console.log('通过：离线桌面与手机 Chromium；鼠标、触摸和键盘切割；无效手势、取消及揭晓期间的输入限制；暂停、说明、超时、结束与重试；存储、刷新与存储禁用；高像素密度；320/375/390/768/844 宽度；减少动态效果；无运行错误或外部请求。');
+  console.log('通过：桌面与手机 Chromium（默认离线，GAME_URL 指定线上）；鼠标、触摸和键盘切割；无效手势、取消及揭晓期间的输入限制；暂停、说明、超时、结束与重试；存储、刷新与存储禁用；高像素密度；320/375/390/768/844 宽度；减少动态效果；无运行错误或外部请求。');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

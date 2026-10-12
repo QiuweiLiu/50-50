@@ -7,58 +7,200 @@
 <meta name="description" content="一刀平分，恰好平衡。划出一条直线，把几何图形分成面积相等的两半。完全离线的精准挑战游戏。">
 <title>50 / 50 — 一刀平分，恰好平衡</title>
 <style>
-:root{--paper:#F5F2EC;--ink:#252525;--red:#D66347;--muted:#8B837A;--text-muted:#70685F;--red-text:#A94D35;--rule:#d9d3ca;--green:#526b52;--mono:'SFMono-Regular',Consolas,'Liberation Mono',monospace}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink)}
-body{font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;transition:background .35s}body.perfect{background:#eaf0e5}
-button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible,canvas:focus-visible{outline:2px solid var(--red);outline-offset:5px}
-button:disabled{opacity:.35;cursor:default}[hidden]{display:none!important}
-.app{max-width:1440px;min-height:100svh;margin:auto;padding:0 56px;display:flex;flex-direction:column}
-.header{height:110px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule);gap:20px}
-.brand{font-size:24px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}.brand span{color:var(--red);padding:0 5px}
-.edition,.eyebrow,.label,.micro,.footer,.text-button,.status,.board-tag{font:11px/1.6 var(--mono);letter-spacing:1.5px;text-transform:uppercase}
-.edition{color:var(--text-muted);margin-left:26px}.brand-group{display:flex;align-items:center}.header-right{display:flex;align-items:center;gap:28px}
-.record{display:flex;gap:14px;align-items:center}.record .label{color:var(--text-muted);font-size:10px}.record strong{font:14px var(--mono);letter-spacing:1px}
-.text-button{border:0;background:none;padding:10px 0;font-size:10px}.text-button:hover{color:var(--red-text)}
-main{flex:1;display:flex;flex-direction:column}.workspace{display:grid;grid-template-columns:46% 54%;align-items:center;flex:1;min-height:530px;padding:46px 0 34px}
-.intro{position:relative;z-index:1;padding-right:20px}.eyebrow{display:flex;align-items:center;gap:12px;color:var(--text-muted)}.eyebrow:before{content:'';width:22px;height:2px;background:var(--red)}
-h1{font-size:clamp(80px,10.9vw,158px);line-height:1;letter-spacing:-.09em;margin:30px 0 24px;font-weight:800;white-space:nowrap}h1 .slash{color:var(--red);display:inline-block;font-weight:400;margin:0 .045em;transform:translateY(-.035em)}
-.tagline{font-weight:800;font-size:clamp(24px,2.7vw,38px);letter-spacing:-1.5px;line-height:1.1;margin:0 0 22px}.description{font-size:14px;line-height:1.8;color:#736b63;max-width:320px;margin:0 0 30px}
-.primary{background:var(--ink);color:var(--paper);border:0;padding:21px 26px;display:inline-flex;align-items:center;justify-content:space-between;gap:38px;min-width:240px;font:12px var(--mono);letter-spacing:1.3px;transition:background .15s,transform .15s}
-.primary:hover{background:var(--red-text);transform:translateY(-2px)}.primary:active{transform:translateY(0)}.primary .arrow{font-family:Arial;font-size:24px;line-height:.6}.intro-note{color:var(--text-muted);font:10px var(--mono);letter-spacing:1px;margin:18px 0 0}
-.board{position:relative;height:490px;min-width:0;isolation:isolate}.board:before,.board:after{content:'';position:absolute;pointer-events:none;width:16px;height:16px;border-color:var(--rule);border-style:solid;z-index:-1}.board:before{left:0;top:0;border-width:1px 0 0 1px}.board:after{right:0;bottom:0;border-width:0 1px 1px 0}
-canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
-.board-tag{position:absolute;color:var(--text-muted);font-size:9px;left:24px;top:12px;pointer-events:none}.board-tag.right{left:auto;right:24px;top:auto;bottom:12px}
-.home-marker{position:absolute;right:24px;top:12px;font:10px var(--mono);color:var(--red-text);letter-spacing:1px}.home-caption{font:10px var(--mono);letter-spacing:1.5px;color:var(--text-muted);position:absolute;left:24px;bottom:12px}
-.hud{display:flex;align-items:center;justify-content:space-between;padding:28px 0 0;gap:20px}.stat-group{display:flex;gap:56px}.stat .label{display:block;color:var(--text-muted);font-size:9px;margin-bottom:7px}.stat strong{font-size:28px;line-height:1;font-weight:500;letter-spacing:-1px;font-variant-numeric:tabular-nums}.stat.combo strong{color:var(--red)}
-.lives{display:flex;align-items:center;gap:8px;margin-left:auto}.life{width:12px;height:12px;background:var(--red);border-radius:50%;transition:background .2s,transform .2s}.life.lost{background:none;border:1px solid #c7bfb4;transform:scale(.8)}.lives .label{color:var(--text-muted);font-size:9px;margin-right:12px}.pause-button{margin-left:26px}
-.workspace.play{display:block;min-height:0;padding:8px 0 0;flex:1}.workspace.play .board{height:clamp(300px,calc(100svh - 352px),630px);max-width:960px;margin:0 auto}
-.play-bottom{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:end;gap:48px;padding:12px 0 30px}.target strong{display:block;font-size:38px;letter-spacing:-2px;line-height:1.2}.target .label,.clock .label{color:var(--text-muted);font-size:9px}.clock-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clock-value{font:16px var(--mono);font-variant-numeric:tabular-nums}.track{height:3px;background:#ded8cd;overflow:hidden}.track span{display:block;background:var(--ink);height:100%;transform-origin:left}.clock.urgent .track span,.clock.urgent .clock-value{color:var(--red);background:var(--red)}.clock.urgent .clock-value{background:none;color:var(--red-text)}.cut-hint{font:10px/1.8 var(--mono);text-align:right;letter-spacing:1px;color:var(--text-muted)}
-.footer{border-top:1px solid var(--rule);height:64px;display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--text-muted);gap:16px}.footer .dot{display:inline-block;width:5px;height:5px;background:var(--red);border-radius:50%;margin-right:8px}.footer .signature{letter-spacing:.5px}
-.instruction{position:absolute;top:7%;left:0;width:100%;text-align:center;color:var(--text-muted);font:10px var(--mono);letter-spacing:1.3px;pointer-events:none;transition:opacity .3s}.instruction.invalid{color:var(--red-text)}
-.reveal{position:absolute;left:0;width:100%;bottom:5%;text-align:center;pointer-events:none;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s}.reveal.visible{opacity:1;transform:none}.reveal .verdict{font:11px var(--mono);letter-spacing:4px;margin:0 0 8px}.reveal .percentages{font-size:clamp(35px,5vw,62px);font-weight:700;line-height:1;letter-spacing:-3px;font-variant-numeric:tabular-nums}.reveal .divider{color:var(--text-muted);font-weight:400;margin:0 8px}.reveal .second{color:var(--red)}.reveal .reward{font:10px var(--mono);letter-spacing:1px;margin:10px 0 0;color:var(--text-muted)}.reveal.good .verdict{color:var(--green)}.reveal.miss .verdict{color:var(--red-text)}
-.paused{position:absolute;inset:0;background:rgba(245,242,236,.94);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:25px;z-index:3}.paused h2{font-size:48px;letter-spacing:-3px;margin:0}.paused p{font:11px var(--mono);color:var(--text-muted);margin:0}
-.end{display:grid;grid-template-columns:1.1fr 1fr;gap:100px;align-items:center;max-width:1020px;width:100%;margin:auto;padding:50px 0}.end h2{font-size:42px;line-height:1;letter-spacing:-2px;margin:24px 0 8px}.final-score{font-size:clamp(80px,11vw,144px);line-height:1;letter-spacing:-.065em;font-weight:800;margin:18px 0 24px}.end-detail{border-top:1px solid var(--rule);padding:19px 0;display:flex;align-items:center;justify-content:space-between;gap:20px}.end-detail .label{color:var(--text-muted);font-size:10px}.end-detail strong{font:20px var(--mono)}.end .best-cut strong{color:var(--red-text);font-size:16px}.end-note{font-size:13px;line-height:1.7;color:var(--text-muted);margin:24px 0 0}.new-record{color:var(--red-text);font:10px var(--mono);letter-spacing:2px;margin:0 0 22px}
-.pulse{animation:pulse var(--combo-duration,.3s) ease-out}@keyframes pulse{50%{transform:scale(var(--combo-scale,1.14))}}
-dialog{border:1px solid var(--rule);background:var(--paper);color:var(--ink);padding:38px;max-width:460px;width:calc(100% - 40px)}dialog::backdrop{background:rgba(37,37,37,.3)}dialog h2{font-size:36px;letter-spacing:-2px;margin:20px 0}dialog p{font-size:14px;line-height:1.75;color:#736b63}dialog .close{float:right}dialog .rules{font:11px/2 var(--mono);letter-spacing:0}dialog .primary{margin-top:12px;width:100%}
-@media(min-width:1440px){h1{font-size:158px}}
-@media(max-width:900px){.app{padding:0 30px}.edition{display:none}.workspace{grid-template-columns:48% 52%}.board{height:420px}h1{font-size:11vw}.description{max-width:260px}.stat-group{gap:34px}.end{gap:50px}.play-bottom{gap:24px}}
-@media(max-width:600px){.app{padding:0 22px;padding-bottom:env(safe-area-inset-bottom)}.header{height:76px}.brand{font-size:22px}.header-right{gap:17px}.record{gap:8px}.record .label{font-size:8px;letter-spacing:.7px}.record strong{font-size:12px}.text-button{font-size:9px;letter-spacing:.8px}.workspace{display:flex;flex-direction:column;align-items:stretch;padding:32px 0 20px;min-height:0}.intro{padding-right:0}.eyebrow{font-size:9px;letter-spacing:1.2px}h1{font-size:clamp(86px,22vw,130px);margin:22px 0 15px}.tagline{font-size:28px;letter-spacing:-1.3px;margin-bottom:14px}.description{font-size:12px;line-height:1.7;max-width:290px;margin-bottom:22px}.primary{padding:18px 22px;min-width:220px;font-size:11px}.intro-note{font-size:9px;margin-top:14px}.board{height:clamp(190px,28svh,270px);margin-top:28px}.board-tag,.home-marker,.home-caption{font-size:8px;letter-spacing:.6px}.board-tag{left:12px;top:8px}.home-marker{right:12px;top:8px}.home-caption{left:12px;bottom:8px}.board-tag.right{right:12px;bottom:8px}.footer{height:55px;font-size:8px;letter-spacing:.5px}.footer .signature{font-size:8px}.hud{padding-top:24px;gap:10px}.stat-group{gap:20px;min-width:0}.stat{min-width:0}.stat .label{font-size:8px;letter-spacing:1px}.stat strong{font-size:clamp(18px,5.5vw,24px)}#score{font-size:clamp(17px,5vw,23px)}.lives{gap:5px}.life{width:9px;height:9px}.lives .label{display:none}.pause-button{margin-left:8px}.workspace.play{padding-top:18px}.workspace.play .board{margin:0;height:clamp(260px,calc(100svh - 370px),620px)}.play-bottom{grid-template-columns:1fr 1.6fr;gap:24px;padding:12px 0 24px}.target strong{font-size:32px}.cut-hint{grid-column:1/-1;text-align:center;font-size:9px;line-height:1;margin-top:0}.clock-header{margin-bottom:10px}.clock-value{font-size:14px}.reveal{bottom:6%}.reveal .percentages{font-size:40px;letter-spacing:-2px}.reveal .reward{font-size:9px}.instruction{top:34px;font-size:9px;letter-spacing:.8px;padding:0 8px}.end{display:block;padding:38px 0 30px;max-width:400px}.end h2{font-size:36px}.final-score{font-size:96px;margin:18px 0 22px}.end .primary{width:100%}.end-right{margin-top:32px}.end-detail{padding:15px 0}.end-detail strong{font-size:17px}.end-detail .label{font-size:9px}.end-note{font-size:12px}.new-record{margin-bottom:18px}dialog{padding:25px}}
-@media(max-width:360px){.header{gap:12px}.header-right{gap:12px}.header .text-button{white-space:nowrap}.record{gap:6px}}
-@media(max-width:600px) and (max-height:700px){.header{height:64px}.hud{padding-top:16px}.workspace.play{padding-top:12px}.workspace.play .board{height:clamp(180px,calc(100svh - 312px),400px)}.play-bottom{padding:8px 0 18px;gap:16px}.target strong{font-size:28px}.target .label{font-size:8px;letter-spacing:.7px}.footer{height:44px}.reveal .percentages{font-size:34px}.reveal .verdict{font-size:10px}.instruction{font-size:8px;letter-spacing:.3px}}
-@media(max-height:650px) and (min-width:601px){.header{height:76px}.workspace{padding:25px 0;min-height:360px}.board{height:330px}h1{font-size:100px;margin:16px 0}.description{margin-bottom:18px}.footer{height:45px}.workspace.play .board{height:300px}.hud{padding-top:16px}.play-bottom{padding-bottom:18px}.end{padding:25px 0}.final-score{font-size:90px}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.primary:hover{transform:none}}
-/* 中文采用系统字体并放宽字距，数字保留原有排版。 */
-.tagline{letter-spacing:.02em;line-height:1.3}.paused h2,.end h2,dialog h2{letter-spacing:0}
-.eyebrow,.label,.micro,.footer,.text-button,.board-tag,.primary,.intro-note,.home-caption,.instruction,.cut-hint,.reveal .reward{letter-spacing:.6px}
-.reveal .verdict{font-size:14px;letter-spacing:2px}dialog .rules{line-height:2}
-@media(max-width:600px){.header .text-button,.record .label{font-size:10px}.stat .label,.target .label,.clock .label,.end-detail .label{font-size:10px}.instruction,.cut-hint,.reveal .reward,.board-tag{font-size:10px}.reveal .verdict{font-size:13px}.footer{font-size:9px}.intro-note{font-size:10px}}
+
+:root {
+  --paper:#F5F2EC; --ink:#252525; --red:#D66347; --red-text:#A94D35;
+  --text-muted:#70685F; --rule:#d9d3ca; --green:#526b52;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',monospace;
+}
+* { box-sizing:border-box; }
+html,body { margin:0; min-height:100%; background:var(--paper); color:var(--ink); }
+body { font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; -webkit-font-smoothing:antialiased; transition:background .25s; }
+body.perfect { background:#e9efe4; }
+button { font:inherit; color:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+button:focus-visible,canvas:focus-visible { outline:2px solid var(--red); outline-offset:4px; }
+button:disabled { opacity:.35; cursor:default; }
+[hidden] { display:none!important; }
+.app { max-width:1440px; min-height:100svh; margin:auto; padding:0 48px; display:flex; flex-direction:column; }
+.header { min-height:88px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--rule); gap:16px; }
+.brand { font-size:25px; font-weight:800; letter-spacing:-1.5px; white-space:nowrap; }
+.brand span { color:var(--red); padding:0 5px; }
+.brand-group,.header-right,.record { display:flex; align-items:center; }
+.edition { margin-left:26px; }
+.header-right { gap:24px; }
+.record { gap:12px; }
+.record strong { font:15px var(--mono); font-variant-numeric:tabular-nums; }
+.edition,.eyebrow,.label,.micro,.footer,.text-button,.board-tag { font:12px/1.6 var(--mono); letter-spacing:.6px; }
+.edition,.label,.micro,.board-tag { color:var(--text-muted); }
+.text-button { background:none; border:0; padding:10px 0; font-size:12px; white-space:nowrap; }
+.text-button:hover { color:var(--red-text); }
+#sound-button { min-width:56px; }
+main { flex:1; display:flex; flex-direction:column; }
+.workspace { display:grid; grid-template-columns:43% 57%; align-items:center; flex:1; min-height:520px; padding:36px 0; }
+.intro { padding-right:20px; }
+.eyebrow { display:flex; align-items:center; gap:12px; color:var(--text-muted); }
+.eyebrow:before { content:''; width:22px; height:2px; background:var(--red); }
+h1 { font-size:clamp(86px,11vw,158px); font-weight:800; line-height:1; letter-spacing:-.09em; margin:26px 0; white-space:nowrap; }
+h1 .slash { color:var(--red); display:inline-block; font-weight:400; margin:0 .045em; transform:translateY(-.035em); }
+.tagline { font-weight:800; font-size:36px; line-height:1.3; letter-spacing:.02em; margin:0 0 20px; }
+.description { font-size:15px; line-height:1.9; color:var(--text-muted); max-width:340px; margin:0 0 28px; }
+.primary { background:var(--ink); color:var(--paper); border:0; padding:21px 26px; display:inline-flex; align-items:center; justify-content:space-between; gap:38px; min-width:240px; font:13px var(--mono); letter-spacing:.6px; transition:background .15s,transform .15s; }
+.primary:hover { background:var(--red-text); transform:translateY(-2px); }
+.primary:active { transform:none; }
+.primary .arrow { font:24px/.6 Arial; }
+.intro-note { color:var(--text-muted); font:12px var(--mono); margin:18px 0 0; }
+.board { position:relative; height:500px; min-width:0; isolation:isolate; }
+.board:before,.board:after { content:''; position:absolute; pointer-events:none; width:16px; height:16px; border-color:var(--rule); border-style:solid; z-index:-1; }
+.board:before { left:0; top:0; border-width:1px 0 0 1px; }
+.board:after { right:0; bottom:0; border-width:0 1px 1px 0; }
+canvas { display:block; width:100%; height:100%; touch-action:none; user-select:none; -webkit-user-select:none; cursor:crosshair; }
+.board-tag { position:absolute; left:18px; top:10px; pointer-events:none; font-size:11px; }
+.home-marker { position:absolute; right:18px; top:10px; font:12px var(--mono); color:var(--red-text); }
+.home-caption,.board-tag.right { display:none; }
+.hud { display:flex; align-items:center; gap:30px; padding:22px 0 8px; }
+.stat-group { display:grid; grid-template-columns:70px minmax(160px,1fr) 110px; gap:44px; align-items:end; }
+.stat .label { display:block; margin-bottom:6px; }
+.stat strong { display:block; font-size:32px; line-height:1; font-weight:500; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+#score { font-size:54px; font-weight:700; letter-spacing:-2px; }
+.stat.combo strong { color:var(--red-text); font-size:36px; }
+.lives { display:flex; align-items:center; gap:9px; margin-left:auto; }
+.lives .label { margin-right:8px; }
+.life { width:14px; height:14px; background:var(--red); border-radius:50%; transition:background .2s,transform .2s; }
+.life.lost { background:none; border:1px solid #bbb2a7; transform:scale(.8); }
+.workspace.play { display:block; min-height:0; padding:10px 0 0; }
+.workspace.play .board { height:clamp(330px,calc(100svh - 370px),680px); max-width:1120px; margin:auto; }
+.play-bottom { display:grid; grid-template-columns:1fr 2fr 1fr; gap:42px; align-items:end; padding:14px 0 26px; }
+.target strong { display:block; font-size:40px; line-height:1.1; letter-spacing:-2px; }
+.clock-header { display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:12px; }
+.clock-value { font:29px var(--mono); letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+.track { height:4px; background:#ded8cd; overflow:hidden; }
+.track span { display:block; background:var(--ink); height:100%; transform-origin:left; }
+.clock.urgent .track span { background:var(--red); }
+.clock.urgent .clock-value { color:var(--red-text); }
+.cut-hint { font:12px/1.6 var(--mono); text-align:right; color:var(--text-muted); }
+.footer { min-height:52px; border-top:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; gap:16px; color:var(--text-muted); font-size:11px; }
+.footer .dot { display:inline-block; width:5px; height:5px; background:var(--red); border-radius:50%; margin-right:8px; }
+.instruction { position:absolute; top:36px; left:0; width:100%; padding:0 8px; text-align:center; color:var(--text-muted); font:12px/1.6 var(--mono); pointer-events:none; }
+.instruction.invalid { color:var(--red-text); }
+.reveal { position:absolute; left:0; width:100%; bottom:6px; text-align:center; pointer-events:none; visibility:hidden; opacity:0; transform:translateY(8px); }
+.reveal.visible { visibility:visible; opacity:1; transform:none; transition:opacity .16s,transform .16s; }
+.reveal .verdict { font:13px/1.4 var(--mono); letter-spacing:2px; margin-bottom:7px; }
+.reveal .percentages { font-size:48px; font-weight:700; line-height:1; letter-spacing:-3px; font-variant-numeric:tabular-nums; }
+.reveal .divider { color:var(--text-muted); font-weight:400; margin:0 8px; }
+.reveal .second { color:var(--red-text); }
+.reveal .reward { font:12px/1.6 var(--mono); color:var(--text-muted); margin:9px 0 0; }
+.reveal.perfect { top:50%; bottom:auto; padding:28px 12px; transform:translateY(calc(-50% + 10px)); background:rgba(233,239,228,.93); }
+.reveal.perfect.visible { transform:translateY(-50%); animation:perfect-entry .35s cubic-bezier(.2,.8,.2,1); }
+.reveal.perfect .verdict { color:var(--green); font-size:15px; letter-spacing:3px; }
+.reveal.perfect .percentages { font-size:clamp(64px,8.5vw,116px); letter-spacing:-.07em; }
+.reveal.perfect .reward { color:var(--green); font-size:14px; }
+.reveal.excellent,.reveal.pass,.reveal.miss { padding:12px 6px; background:rgba(245,242,235,.96); }
+.reveal.excellent .verdict { color:var(--green); }
+.reveal.excellent .percentages { font-size:56px; }
+.reveal.miss .verdict { color:var(--red-text); }
+.reveal.miss .reward { color:var(--red-text); font-weight:700; }
+@keyframes perfect-entry { from { opacity:0; transform:translateY(-50%) scale(.92); } to { opacity:1; transform:translateY(-50%) scale(1); } }
+.paused { position:absolute; inset:0; background:rgba(245,242,236,.96); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:24px; z-index:3; }
+.paused h2 { font-size:48px; margin:0; }
+.paused p { font:12px var(--mono); color:var(--text-muted); margin:0; }
+.end { display:grid; grid-template-columns:1.1fr 1fr; gap:90px; align-items:center; max-width:1020px; width:100%; margin:auto; padding:50px 0; }
+.end h2 { font-size:40px; margin:22px 0 8px; }
+.final-score { font-size:clamp(76px,11vw,144px); line-height:1; letter-spacing:-.065em; font-weight:800; margin:18px 0 24px; }
+.end-detail { border-top:1px solid var(--rule); padding:18px 0; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.end-detail strong { font:20px var(--mono); }
+.end .best-cut strong { color:var(--red-text); font-size:16px; }
+.end-note { font-size:14px; line-height:1.8; color:var(--text-muted); margin:24px 0 0; }
+.new-record { color:var(--red-text); font:12px var(--mono); margin:0 0 22px; }
+.pulse { animation:pulse var(--combo-duration,.3s) ease-out; }
+@keyframes pulse { 50% { transform:scale(var(--combo-scale,1.14)); } }
+dialog { border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:32px; max-width:460px; width:calc(100% - 36px); max-height:calc(100svh - 36px); }
+dialog::backdrop { background:rgba(37,37,37,.3); }
+dialog h2 { font-size:32px; margin:20px 0; }
+dialog p { font-size:14px; line-height:1.8; color:var(--text-muted); }
+dialog .close { float:right; }
+dialog .rules { font:12px/2 var(--mono); }
+dialog .primary { margin-top:12px; width:100%; }
+@media(max-width:900px) {
+  .app { padding:0 28px; } .edition { display:none; }
+  .stat-group { gap:26px; } .end { gap:45px; }
+  .board { height:450px; } .play-bottom { gap:24px; }
+}
+@media(max-width:600px) {
+  .app { padding:0 18px; padding-bottom:env(safe-area-inset-bottom); }
+  .header { min-height:64px; gap:12px; } .brand { font-size:23px; }
+  .header-right { gap:15px; } .record { gap:6px; }
+  .record .label { font-size:11px; } .record strong { font-size:12px; }
+  .header .text-button { font-size:11px; } #sound-button { min-width:40px; }
+  .workspace { position:relative; display:flex; flex-direction:column; align-items:stretch; padding:24px 0 22px; min-height:0; gap:12px; }
+  .intro { padding:0; } .intro .eyebrow,.intro h1,.intro-note { display:none; }
+  .tagline { font-size:28px; line-height:1.25; margin:0 0 10px; }
+  .tagline br { display:none; } .description { max-width:none; margin:0; font-size:13px; line-height:1.7; }
+  .description br { display:none; } .description .extra { display:none; }
+  #start { position:absolute; left:0; right:0; bottom:16px; width:100%; z-index:2; }
+  .primary { min-width:0; font-size:13px; padding:18px 22px; }
+  .board { height:clamp(220px,calc(100svh - 300px),420px); margin:0 0 66px; }
+  .board:before,.board:after,.home-marker { display:none; }
+  .board-tag { left:0; top:4px; font-size:11px; }
+  .hud { display:grid; grid-template-columns:1fr auto auto; gap:12px; padding:17px 0 5px; align-items:end; }
+  .stat-group { grid-column:1/-1; grid-row:1; grid-template-columns:48px 1fr 66px; gap:18px; align-items:end; }
+  .stat strong { font-size:24px; } #score { font-size:38px; letter-spacing:-1.5px; }
+  .stat.combo strong { font-size:26px; } .stat .label { font-size:11px; margin-bottom:5px; }
+  .lives { grid-column:1; grid-row:2; margin:0; gap:7px; }
+  .lives .label { font-size:11px; margin-right:4px; } .life { width:11px; height:11px; }
+  .pause-button { grid-column:3; grid-row:2; padding:0; font-size:11px; }
+  .workspace.play { padding:8px 0 0; gap:0; }
+  .workspace.play .board { height:clamp(230px,calc(100svh - 362px),650px); margin:0; }
+  .instruction { font-size:11px; top:28px; }
+  .play-bottom { grid-template-columns:1fr 1.5fr; gap:15px 24px; padding:10px 0 17px; }
+  .target .label,.clock .label { font-size:11px; } .target strong { font-size:34px; }
+  .clock-header { margin-bottom:9px; gap:5px; } .clock-value { font-size:23px; letter-spacing:-1px; }
+  .cut-hint { grid-column:1/-1; font-size:11px; text-align:center; line-height:1.4; }
+  .cut-hint br { display:none; }
+  .footer { min-height:42px; font-size:11px; } .footer .signature { display:none; }
+  .reveal .percentages { font-size:36px; letter-spacing:-2px; }
+  .reveal .reward { font-size:11px; margin-top:7px; }
+  .reveal .verdict { font-size:12px; }
+  .reveal.perfect { padding:28px 0; }
+  .reveal.perfect .percentages { font-size:clamp(53px,15vw,84px); }
+  .reveal.perfect .verdict { font-size:13px; letter-spacing:1.5px; }
+  .reveal.perfect .reward { font-size:12px; }
+  .reveal.excellent .percentages { font-size:42px; }
+  .end { display:block; padding:32px 0; max-width:400px; }
+  .end h2 { font-size:32px; } .final-score { font-size:80px; }
+  .end .primary { width:100%; } .end-right { margin-top:28px; }
+  .end-detail { padding:14px 0; } .end-detail .label { font-size:11px; }
+  .end-detail strong { font-size:17px; } .end-note { font-size:13px; }
+  dialog { padding:24px; }
+}
+@media(max-width:360px) { .header-right { gap:10px; } .record .label { display:none; } }
+@media(max-width:600px) and (max-height:700px) {
+  .header { min-height:58px; } .workspace { padding-top:18px; }
+  .tagline { font-size:25px; } .description { font-size:12px; }
+  .board { height:220px; margin-bottom:60px; }
+  .hud { padding-top:12px; gap:9px; } #score { font-size:32px; }
+  .workspace.play .board { height:calc(100svh - 325px); min-height:200px; }
+  .play-bottom { padding:8px 0 12px; gap:10px 18px; }
+  .target strong { font-size:30px; } .clock-value { font-size:21px; }
+  .footer { min-height:36px; }
+  .reveal.perfect { padding:20px 0; }
+}
+@media(max-height:650px) and (min-width:601px) {
+  .header { min-height:64px; } .workspace { min-height:360px; padding:20px 0; }
+  .board { height:330px; } .workspace.play .board { height:320px; }
+  h1 { font-size:100px; margin:15px 0; } .tagline { font-size:28px; }
+  .description { margin-bottom:18px; } #score { font-size:42px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*:before,*:after { animation:none!important; transition:none!important; }
+  .primary:hover { transform:none; }
+}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="header">
  <div class="brand-group"><div class="brand" aria-label="50 50">50 <span>/</span> 50</div><span class="edition">一刀平分，恰好平衡</span></div>
- <div class="header-right"><div class="record"><span class="label">历史最高分</span><strong id="record">00000</strong></div><button class="text-button" id="help-button" aria-haspopup="dialog">玩法说明 ↗</button></div>
+ <div class="header-right"><div class="record"><span class="label">最高分</span><strong id="record">00000</strong></div><button class="text-button" id="sound-button" aria-pressed="false" aria-label="音效">静音</button><button class="text-button" id="help-button" aria-haspopup="dialog">玩法说明 ↗</button></div>
 </header>
 <main>
  <section class="hud" id="hud" hidden aria-label="游戏状态">
@@ -66,7 +208,7 @@ dialog{border:1px solid var(--rule);background:var(--paper);color:var(--ink);pad
   <div class="lives" id="lives" aria-label="剩余 3 条生命"><span class="label">生命</span><span class="life"></span><span class="life"></span><span class="life"></span></div><button class="text-button pause-button" id="pause-button">Ⅱ 暂停</button>
  </section>
  <section class="workspace" id="workspace">
-  <div class="intro" id="intro"><div class="eyebrow">精准挑战 / 第 001 号</div><h1>50<span class="slash">/</span>50</h1><h2 class="tagline">只划一刀。<br>恰好两半。</h2><p class="description">凭一点直觉，稳住你的手。<br>把图形分成面积相等的两半。<br>你能离完美有多近？</p><button class="primary" id="start">开始挑战 <span class="arrow" aria-hidden="true">↗</span></button><p class="intro-note">三条生命，无尽挑战。</p></div>
+  <div class="intro" id="intro"><div class="eyebrow">精准挑战 / 第 001 号</div><h1>50<span class="slash">/</span>50</h1><h2 class="tagline">一刀平分。<br>恰好平衡。</h2><p class="description">划一条直线，把图形分成面积相等的两半。<br><span class="extra">凭直觉下刀，离完美再近一点。</span></p><button class="primary" id="start">开始挑战 <span class="arrow" aria-hidden="true">↗</span></button><p class="intro-note">三条生命，无尽挑战。</p></div>
   <div class="board" id="board">
    <span class="board-tag" id="board-tag">图 01 / 寻找平衡</span><span class="home-marker" id="home-marker">½ + ½ = 1</span>
    <canvas id="canvas" tabindex="0" aria-label="切割区域。拖动划出直线，松手切割。键盘：上下方向键移动直线，左右方向键旋转，回车键切割。" aria-describedby="instruction"></canvas>
@@ -86,7 +228,7 @@ dialog{border:1px solid var(--rule);background:var(--paper);color:var(--ink);pad
   <div class="end-right"><div class="end-detail"><span class="label">历史最高分</span><strong id="final-best"></strong></div><div class="end-detail"><span class="label">挑战回合数</span><strong id="final-round"></strong></div><div class="end-detail"><span class="label">本次 / 历史最高连击</span><strong id="final-combo"></strong></div><div class="end-detail best-cut"><span class="label">最精准的一刀</span><strong id="final-cut"></strong></div><p class="micro" style="color:var(--text-muted);margin-top:25px">一刀平分，恰好平衡。</p></div>
  </section>
 </main>
-<footer class="footer"><span><span class="dot"></span>少一点，准一点。</span><span class="signature" id="footer-note">为平分而生。</span></footer>
+<footer class="footer"><span><span class="dot"></span>三条生命 · 无尽挑战</span><span class="signature" id="footer-note">为平分而生。</span></footer>
 </div>
 <dialog id="help" aria-labelledby="help-title"><button class="text-button close" id="help-close" aria-label="关闭玩法说明">关闭 ×</button><div class="eyebrow">玩法很简单</div><h2 id="help-title">目标，就是一半。</h2><p>拖动鼠标或手指划线，松手完成切割。这一刀会沿直线无限延伸，只显示穿过图形的部分。</p><p>让两边面积尽量接近 50%，即可保住生命并累计连击。偏差过大或时间耗尽会损失一条生命。短拖动、没有穿过图形或仅与边缘相切，都不算有效切割。</p><p class="rules">完美平分：误差 ≤ 0.5 个百分点<br>非常精准：误差 ≤ 2 个百分点<br>合格：误差 ≤ 当轮容差（8 → 6 → 5）<br>限时：18 → 15 → 13 秒，最低 7 秒</p><p>得分 = 四舍五入［1000 ×（1 − 误差 /（容差 + 2））× 连击倍率］。每多一次连续成功，倍率增加 10%，最高 2 倍。失败不计分。</p><p>键盘操作：选中画布后，↑ ↓ 移动直线，← → 旋转，回车键切割，Shift 键精细调整，Esc 键暂停或继续。浏览器允许存储时，最高分和最高连击会保存在本设备。</p><button class="primary" id="help-done">明白了 <span class="arrow" aria-hidden="true">→</span></button></dialog>
 <script id="geometry">
@@ -160,31 +302,37 @@ const ShapeGenerator = (() => {
       points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}];
     } else {
       const n=round<=8?(round%2?5:4):5+Math.floor(random()*4);
-      // 圆周点经过仿射变换后仍构成严格凸多边形。
-      const phase=random()*Math.PI*2,rx=245+random()*55,ry=210+random()*45,shear=(random()-0.5)*0.45;
+      // 在椭圆的一段不均匀圆弧上取点，再由端点弦闭合。
+      // 弦侧与弧侧面积不同，增加顶点不会把图形重新变成中心对称。
+      const span=Math.PI*(round<=8?1.3+random()*0.38:1.08+random()*0.32);
+      const rx=270+random()*55,ry=245+random()*40,shear=(random()-0.5)*0.35;
       points=Array.from({length:n},(_,i)=>{
-        const angle=phase+(i+(random()-0.5)*0.52)*Math.PI*2/n;
+        const jitter=i===0||i===n-1?0:(random()-0.5)*0.44;
+        const angle=-span/2+(i+jitter)*span/(n-1);
         const y=Math.sin(angle)*ry;
-        return{x:Math.cos(angle)*rx+shear*y,y};
+        return {x:Math.cos(angle)*rx+shear*y,y};
       });
     }
-    const rotation=round===1?0:(random()-0.5)*(round<=3?0.42:1.8);
+    const rotation=round===1?0:round<=3?(random()-0.5)*0.42:random()*Math.PI*2;
     const c=Math.cos(rotation),s=Math.sin(rotation);
-    let poly=Geometry.hull(points.map(p=>({x:500+p.x*c-p.y*s,y:400+p.x*s+p.y*c})));
-    const maxX=Math.max(...poly.map(p=>Math.abs(p.x-500))),maxY=Math.max(...poly.map(p=>Math.abs(p.y-400)));
-    const scale=Math.min(1,340/maxX,280/maxY);
-    poly=poly.map(p=>({x:500+(p.x-500)*scale,y:400+(p.y-400)*scale}));
+    let poly=Geometry.hull(points.map(p=>({x:p.x*c-p.y*s,y:p.x*s+p.y*c})));
+    const xs=poly.map(p=>p.x),ys=poly.map(p=>p.y);
+    const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+    const width=Math.max(...xs)-Math.min(...xs),height=Math.max(...ys)-Math.min(...ys);
+    const scale=Math.min(1,640/width,540/height);
+    // 对齐包围盒中心，而非只平移偏置：难度来自真实形状面积分布。
+    poly=poly.map(p=>({x:500+(p.x-cx)*scale,y:400+(p.y-cy)*scale}));
     return poly;
   }
   function generate(round,random=Math.random) {
     // 每个候选图形通过有效性检查后，才交给玩家切割。
     for(let attempt=0;attempt<8;attempt++){
       const poly=create(round,random);
-      if(Geometry.valid(poly))return poly;
+      const verticesOk=round<=3?poly.length===4:round<=8?poly.length===(round%2?5:4):poly.length>=5&&poly.length<=8;
+      if(verticesOk&&Geometry.valid(poly))return poly;
     }
-    // 候选图形均未通过检查时，使用边界内的规则凸形状保证回合可玩。
-    const n=round<=3?4:round<=8?5:6;
-    return Array.from({length:n},(_,i)=>{const a=i*Math.PI*2/n+Math.PI/4;return{x:500+260*Math.cos(a),y:400+230*Math.sin(a)};});
+    // 固定有效参数仍保留同一套面积偏置，避免退回对称的后期图形。
+    return create(round,()=>0.37);
   }
   function difficulty(round){return{tolerance:round<=3?8:round<=8?6:5,seconds:round<=3?18:round<=8?15:Math.max(7,13-(round-9)*0.28)};}
   return {generate,difficulty};
@@ -212,6 +360,18 @@ const Records={
   load(){try{const r=JSON.parse(localStorage.getItem(this.key));return{score:Number.isSafeInteger(r?.score)&&r.score>=0?r.score:0,combo:Number.isSafeInteger(r?.combo)&&r.combo>=0?r.combo:0};}catch{return{score:0,combo:0};}},
   save(r){try{localStorage.setItem(this.key,JSON.stringify(r));return true;}catch{return false;}}
 };
+const Sound={
+  enabled:true,context:null,master:null,lastStroke:0,
+  init(){try{this.enabled=localStorage.getItem('5050.sound')!=='off';}catch{}this.update();},
+  update(){const b=$('sound-button');b.textContent=this.enabled?'音效开':'静音';b.setAttribute('aria-pressed',String(this.enabled));b.setAttribute('aria-label','音效');},
+  unlock(){if(!this.enabled)return;try{if(!this.context){const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;this.context=new Audio();this.master=this.context.createGain();this.master.gain.value=.045;this.master.connect(this.context.destination);}if(this.context.state==='suspended')this.context.resume().catch(()=>{});}catch{}},
+  toggle(){this.enabled=!this.enabled;if(this.master)this.master.gain.value=this.enabled?.045:0;try{localStorage.setItem('5050.sound',this.enabled?'on':'off');}catch{}this.update();this.unlock();},
+  play(kind){if(!this.enabled||this.context?.state!=='running')return;if(kind==='stroke'){const now=performance.now();if(now-this.lastStroke<90)return;this.lastStroke=now;}
+    const notes=kind==='PERFECT'?[660,880,1108]:kind==='EXCELLENT'?[660,880]:kind==='MISS'||kind==='TIME UP'?[180,120]:kind==='stroke'?[340]:[440];
+    notes.forEach((frequency,i)=>{const start=this.context.currentTime+i*.075,duration=kind==='stroke'?.045:.16,osc=this.context.createOscillator(),gain=this.context.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency,start);gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(kind==='stroke'?.15:.7,start+.008);gain.gain.exponentialRampToValueAtTime(.001,start+duration);osc.connect(gain);gain.connect(this.master);osc.start(start);osc.stop(start+duration+.01);osc.onended=()=>{osc.disconnect();gain.disconnect();};});
+  }
+};
+Sound.init();$('sound-button').addEventListener('click',()=>Sound.toggle());
 const state={phase:'home',round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,poly:ShapeGenerator.generate(5),difficulty:ShapeGenerator.difficulty(1),deadline:0,remaining:0,cut:null,revealAt:0,judgment:null,records:Records.load(),previousBest:0};
 const view={width:0,height:0,scale:1,x:0,y:0,dpr:1};
 const input={pointerId:null,a:null,b:null,clientStart:null,keyLine:null};
@@ -220,11 +380,18 @@ function resetInput(){
   if(input.pointerId!==null&&canvas.hasPointerCapture(input.pointerId))canvas.releasePointerCapture(input.pointerId);
   input.pointerId=null;input.a=null;input.b=null;input.clientStart=null;input.keyLine=null;
 }
+function updateView(){
+  const xs=state.poly.map(p=>p.x),ys=state.poly.map(p=>p.y);
+  const width=Math.max(...xs)-Math.min(...xs),height=Math.max(...ys)-Math.min(...ys);
+  const padding=view.width<600?24:64,top=state.phase==='home'?24:view.width<600?48:64,bottom=state.phase==='home'?24:40;
+  view.scale=Math.min((view.width-padding*2)/width,(view.height-top-bottom)/height);
+  view.x=view.width/2-500*view.scale;view.y=top+(view.height-top-bottom)/2-400*view.scale;
+}
 function resize(){
   const rect=canvas.getBoundingClientRect();
   view.width=rect.width;view.height=rect.height;view.dpr=window.devicePixelRatio||1;
   canvas.width=Math.round(rect.width*view.dpr);canvas.height=Math.round(rect.height*view.dpr);
-  view.scale=Math.min(rect.width/1000,rect.height/800);view.x=(rect.width-1000*view.scale)/2;view.y=(rect.height-800*view.scale)/2;
+  updateView();
   resetInput();Renderer.draw(performance.now());
 }
 function mapPointer(event){const rect=canvas.getBoundingClientRect();return{x:(event.clientX-rect.left-view.x)/view.scale,y:(event.clientY-rect.top-view.y)/view.scale};}
@@ -236,6 +403,7 @@ function updateHUD(){
   $('pause-button').disabled=!['playing','reveal'].includes(state.phase);
 }
 function startRun(){
+  Sound.unlock();
   $('help').close();helpPaused=false;
   resetInput();Object.assign(state,{round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,previousBest:state.records.score});
   $('intro').hidden=true;$('end').hidden=true;$('workspace').hidden=false;$('workspace').classList.add('play');$('hud').hidden=false;$('play-bottom').hidden=false;
@@ -250,7 +418,7 @@ function nextRound(){
   $('instruction').className='instruction';$('instruction').textContent=state.round===1?'划线穿过图形，松手完成切割。':'一条直线，面积平分。';
   $('board-tag').textContent=`图 ${String(state.round).padStart(2,'0')} / ${state.poly.length} 个顶点`;
   $('cut-hint').innerHTML=`误差不超过 ±${state.difficulty.tolerance}.0 个百分点<br>即可保住生命。`;
-  $('timer').setAttribute('aria-valuemax',state.difficulty.seconds);updateHUD();
+  $('timer').setAttribute('aria-valuemax',state.difficulty.seconds);updateView();updateHUD();
 }
 function invalidCut(message){$('instruction').textContent=message;$('instruction').classList.add('invalid');hintUntil=performance.now()+1200;}
 function submitCut(a,b){
@@ -274,7 +442,8 @@ function settle(cut,now){
   $('instruction').hidden=true;$('verdict').textContent={PERFECT:'完美平分',EXCELLENT:'非常精准',PASS:'合格',MISS:'偏差过大','TIME UP':'时间到'}[j.verdict];
   $('percent-left').textContent=cut?cut.percent.toFixed(1):'—';$('percent-right').textContent=cut?(100-cut.percent).toFixed(1):'—';
   $('reward').textContent=j.success?`+${j.points} 分 / 连击 ×${j.combo} / ${j.multiplier.toFixed(1)} 倍`:cut?`偏差 ${cut.error.toFixed(1)} 个百分点 / −1 生命`:'时间耗尽 / −1 生命';
-  $('reveal').className='reveal '+(j.verdict==='PERFECT'?'good':j.success?'':'miss');
+  $('reveal').className='reveal '+(j.verdict==='PERFECT'?'perfect':j.verdict==='EXCELLENT'?'excellent':j.success?'pass':'miss');
+  state.revealDuration=reducedMotion.matches?1000:j.verdict==='PERFECT'?1800:j.verdict==='EXCELLENT'?1450:j.success?1100:1450;Sound.play(j.verdict);
   if(j.verdict==='PERFECT')document.body.classList.add('perfect');
   if(j.success){$('combo').style.setProperty('--combo-scale',String(1.08+Math.min(j.combo,10)*.012));$('combo').style.setProperty('--combo-duration',(180+Math.min(j.combo,10)*12)+'ms');$('combo').classList.remove('pulse');void $('combo').offsetWidth;$('combo').classList.add('pulse');}
   updateHUD();
@@ -311,9 +480,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('help').open){if
 canvas.addEventListener('pointerdown',e=>{
   if(state.phase!=='playing'||input.pointerId!==null||!e.isPrimary||e.button!==0)return;
   if(performance.now()>=state.deadline){settle(null,performance.now());return;}
-  e.preventDefault();canvas.focus({preventScroll:true});input.keyLine=null;input.pointerId=e.pointerId;input.a=mapPointer(e);input.b=input.a;input.clientStart={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);
+  Sound.unlock();e.preventDefault();canvas.focus({preventScroll:true});input.keyLine=null;input.pointerId=e.pointerId;input.a=mapPointer(e);input.b=input.a;input.clientStart={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);
 });
-canvas.addEventListener('pointermove',e=>{if(e.pointerId===input.pointerId&&state.phase==='playing'){input.b=mapPointer(e);e.preventDefault();}});
+canvas.addEventListener('pointermove',e=>{if(e.pointerId===input.pointerId&&state.phase==='playing'){input.b=mapPointer(e);Sound.play('stroke');e.preventDefault();}});
 canvas.addEventListener('pointerup',e=>{
   if(e.pointerId!==input.pointerId)return;
   const a=input.a,b=mapPointer(e),distance=Math.hypot(e.clientX-input.clientStart.x,e.clientY-input.clientStart.y);resetInput();
@@ -322,7 +491,7 @@ canvas.addEventListener('pointerup',e=>{
 canvas.addEventListener('pointercancel',resetInput);canvas.addEventListener('lostpointercapture',e=>{if(e.pointerId===input.pointerId)resetInput();});
 canvas.addEventListener('keydown',e=>{
   if(state.phase!=='playing'||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter'].includes(e.key))return;
-  e.preventDefault();if(input.pointerId!==null)return;
+  Sound.unlock();e.preventDefault();if(input.pointerId!==null)return;
   input.keyLine??={angle:0,offset:0};
   const k=input.keyLine,step=e.shiftKey?2:10;
   if(e.key==='ArrowUp')k.offset=Math.max(-350,k.offset-step);
@@ -341,6 +510,7 @@ const Renderer={
     if(state.phase==='home'){
       const t=reducedMotion.matches?0:Math.sin(now/2200)*7;
       const a={x:200,y:180},b={x:800,y:595},cut=Geometry.split(state.poly,a,b);
+      if(!cut){this.polygon(state.poly,'#252525');return;}
       this.polygon(cut.left,'#252525',-9-t,13+t);this.polygon(cut.right,'#D66347',9+t,-13-t);
       const ends=Geometry.intersections(state.poly,a,b);if(ends.length===2)this.line(ends[0],ends[1],'#8B837A',1,[5,7]);
       return;
@@ -350,7 +520,7 @@ const Renderer={
     if(state.phase==='reveal'&&cut){
       const duration=reducedMotion.matches?1:650,p=Math.min(1,Math.max(0,(now-state.revealAt-100)/duration)),ease=1-(1-p)**3;
       const length=Math.hypot(cut.b.x-cut.a.x,cut.b.y-cut.a.y),nx=-(cut.b.y-cut.a.y)/length,ny=(cut.b.x-cut.a.x)/length;
-      const shift=(state.judgment.verdict==='PERFECT'?44:25)*ease;
+      const shift=Math.min(state.judgment.verdict==='PERFECT'?58:25,20/view.scale)*ease;
       this.polygon(cut.left,'#252525',nx*shift,ny*shift);this.polygon(cut.right,'#D66347',-nx*shift,-ny*shift);
       const ends=Geometry.intersections(state.poly,cut.a,cut.b);
       if(ends.length===2)this.line(ends[0],ends[1],state.judgment.verdict==='PERFECT'?'#526b52':'#8B837A',1,[4,7]);
@@ -381,7 +551,7 @@ function tick(now){
   }
   if(state.phase==='reveal'){
     if(now-state.revealAt>160)$('reveal').classList.add('visible');
-    if(now-state.revealAt>(reducedMotion.matches?1050:1650)){if(state.lives===0)finishRun();else{state.round++;nextRound();}}
+    if(now-state.revealAt>state.revealDuration){if(state.lives===0)finishRun();else{state.round++;nextRound();}}
   }
   Renderer.draw(now);requestAnimationFrame(tick);
 }
