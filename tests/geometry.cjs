@@ -35,7 +35,7 @@ near(G.area(G.clip(collinearShape,{x:340,y:40},{x:340,y:680},1))+G.area(G.clip(c
 assert.equal(G.split(collinearShape,{x:140,y:140},{x:500,y:140}),null,'贴边相切线不能算有效切割');
 assert.ok(!G.valid([{x:140,y:120},{x:500,y:560},{x:500,y:120},{x:140,y:560}]),'自交轮廓不能通过有效性检查');
 
-// 用实际四种动物轮廓比较 6 点与 12 点曲线采样，覆盖竖直、水平和斜向多位置，
+// 用实际四种动物轮廓比较 8 点与 16 点曲线采样，覆盖竖直、水平和斜向多位置，
 // 要求同一条切线的面积百分比收敛到 0.1 个百分点以内。
 function bounds(points){const xs=points.map(point=>point.x),ys=points.map(point=>point.y);return{cx:(Math.min(...xs)+Math.max(...xs))/2,cy:(Math.min(...ys)+Math.max(...ys))/2,w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)};}
 function convergenceLines(points){const {cx,cy,w,h}=bounds(points),reach=Math.max(w,h)*3;return[
@@ -46,9 +46,9 @@ function convergenceLines(points){const {cx,cy,w,h}=bounds(points),reach=Math.ma
   [{x:cx-reach,y:cy-reach*.62},{x:cx+reach,y:cy+reach*.62}],
   [{x:cx-reach,y:cy+reach*.58},{x:cx+reach,y:cy-reach*.58}],
 ];}
-assert.equal(Array.from(S.kinds).sort().join(','),['猫','鱼','鸟','鲸'].sort().join(','),'动物轮廓种类必须固定为四种');
+assert.equal(Array.from(S.kinds).sort().join(','),['猫','兔','鸭','鲸'].sort().join(','),'动物轮廓种类必须固定为四种');
 for(const kind of S.kinds){
-  const low=S.sampleOutline(kind,6),high=S.sampleOutline(kind,12);
+  const low=S.sampleOutline(kind,8),high=S.sampleOutline(kind,16);
   assert.equal(low.length*2,high.length,`${kind} 高密度采样点数不为 2 倍`);
   let compared=0;
   for(const [a,b] of convergenceLines(low)){
@@ -66,12 +66,13 @@ for(const kind of S.kinds){
 
 let seed=5050;
 const rng=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/2**32;};
-let validCuts=0,balancedChecks=0,kindCounts={};
+let validCuts=0,balancedChecks=0,kindCounts={},familyCounts={};
 for(let i=0;i<12000;i++){
  const round=1+Math.floor(rng()*200),p=S.generate(round,rng);
  assert.ok(G.valid(p),`第 ${i} 个图形无效，回合 ${round}`);
- if(round<=3)assert.equal(p.length,4);
- else {assert.ok(p.length>=64&&p.length<=160,`曲线轮廓顶点数异常：${p.length}`);assert.ok(typeof p.kind==='string'&&p.kind.length>0);kindCounts[p.kind]=(kindCounts[p.kind]||0)+1;}
+ if(round<=3||round%2===1){assert.equal(p.family,'polygon',`回合 ${round} 应生成多边形族`);if(round<=3)assert.equal(p.length,4);else assert.ok(p.length>=4&&p.length<=8,`不规则多边形顶点数异常：${p.length}`);}
+ else {assert.equal(p.family,'curve',`回合 ${round} 应生成曲边族`);assert.ok(p.length>=112&&p.length<=176,`曲线轮廓顶点数异常：${p.length}`);assert.ok(typeof p.kind==='string'&&p.kind.length>0);kindCounts[p.kind]=(kindCounts[p.kind]||0)+1;}
+ familyCounts[p.family]=(familyCounts[p.family]||0)+1;
  const a={x:rng()*1000,y:rng()*800},b={x:rng()*1000,y:rng()*800};
  near(G.area(G.clip(p,a,b,1))+G.area(G.clip(p,a,b,-1)),G.area(p),1e-6);
  const r=G.split(p,a,b);
@@ -79,9 +80,10 @@ for(let i=0;i<12000;i++){
  // 每个固定种子轮廓都用 45 次二分验证真实面积平分，误差保持在 1e-7 个百分点内。
  {let lo=0,hi=1000;for(let n=0;n<45;n++){const x=(lo+hi)/2;const fraction=G.area(G.clip(p,{x,y:0},{x,y:800},1))/G.area(p);if(fraction<.5)lo=x;else hi=x;}const x=(lo+hi)/2;near(G.split(p,{x,y:0},{x,y:800}).percent,50,1e-7);balancedChecks++;}
 }
-assert.ok(Object.keys(kindCounts).length>=4,`动物轮廓种类不足：${Object.keys(kindCounts).join('、')}`);
+assert.equal(Object.keys(kindCounts).sort().join(','),['猫','兔','鸭','鲸'].sort().join(','),`动物轮廓种类不足：${Object.keys(kindCounts).join('、')}`);
+assert.ok(familyCounts.curve>0&&familyCounts.polygon>0,'固定种子未覆盖曲边与多边形族');
 assert.equal(S.difficulty(1).tolerance,6);assert.equal(S.difficulty(1).seconds,12);assert.equal(S.difficulty(4).tolerance,4);assert.equal(S.difficulty(4).seconds,9);assert.equal(S.difficulty(9).tolerance,3);assert.equal(S.difficulty(9).seconds,7.5);assert.equal(S.difficulty(999).seconds,4.5);
-console.log(`通过：矩形、凹 C 形多交段、多块裁剪、零长/相切、曲线采样收敛；12000 个固定种子轮廓、面积守恒、${validCuts} 次有效随机切割、${balancedChecks} 条面积平分线；动物种类：${Object.keys(kindCounts).join('、')}。`);
+console.log(`通过：矩形、凹 C 形多交段、多块裁剪、零长/相切、四种动物 8/16 点曲线采样收敛；12000 个固定种子轮廓、面积守恒、${validCuts} 次有效随机切割、${balancedChecks} 条面积平分线；动物种类：${Object.keys(kindCounts).join('、')}；族：${JSON.stringify(familyCounts)}。`);
 vm.runInContext(html.match(/<script id="scoring">([\s\S]*?)<\/script>/)[1]+'\nglobalThis.scoring=Scoring;',context);
 const scoring=context.scoring;
 for(const [e,label] of [[0,'PERFECT'],[.5,'PERFECT'],[.5001,'EXCELLENT'],[2,'EXCELLENT'],[2.0001,'PASS'],[8,'PASS'],[8.0001,'MISS']])assert.equal(scoring.evaluate(e,8,0).verdict,label);

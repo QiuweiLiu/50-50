@@ -73,6 +73,8 @@ fs.mkdirSync(path.join(root,'outputs/browser'),{recursive:true});
   // 后期曲边形真实渲染与多段预览；烟花只能由完美判定触发且不干扰游戏状态。
   await page.evaluate(()=>{startRun();state.round=12;nextRound();});await page.clock.runFor(50);await page.screenshot({path:path.join(root,'outputs/browser/desktop-animal.png'),fullPage:true});
   const curved=await page.evaluate(()=>({name:state.poly.kind,vertices:state.poly.length,seconds:state.difficulty.seconds}));assert.ok(curved.name&&curved.vertices>30);assert.ok(curved.seconds<8);
+  await page.evaluate(()=>{state.round=13;nextRound();});assert.equal(await page.evaluate(()=>state.poly.family),'polygon');assert.ok(await page.evaluate(()=>state.poly.length>=4&&state.poly.length<=8));
+  await page.evaluate(()=>{state.round=14;nextRound();});assert.equal(await page.evaluate(()=>state.poly.family),'curve');
   await page.locator('#exit-button').click();
   assert.deepEqual(errors,[]);if(!process.env.GAME_URL)assert.deepEqual(external,[]);
   // 验证真实触摸事件、手势取消、移动坐标映射与窗口缩放。

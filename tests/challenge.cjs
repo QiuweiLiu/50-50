@@ -89,6 +89,7 @@ function measureConfig({ round, seed }) {
     fiftySolutionChecked: Math.min(SOLUTION_SAMPLE_COUNT, SAMPLE_COUNT),
     fiftySolutionFailures: 0,
     kinds: {},
+    families: {},
   };
   const strategyData = Object.fromEntries(STRATEGIES.map((strategy) => [strategy, {
     passed: 0,
@@ -104,6 +105,7 @@ function measureConfig({ round, seed }) {
     else generator.invalid += 1;
     generator.vertices[poly.length] = (generator.vertices[poly.length] || 0) + 1;
     if (poly.kind) generator.kinds[poly.kind] = (generator.kinds[poly.kind] || 0) + 1;
+    if (poly.family) generator.families[poly.family] = (generator.families[poly.family] || 0) + 1;
     const total = G.area(poly);
     generator.areaMin = Math.min(generator.areaMin, total);
     generator.areaMax = Math.max(generator.areaMax, total);
@@ -173,13 +175,19 @@ function assertCurrent(result, metrics) {
     assert.equal(config.generator.fiftySolutionFailures, 0, `回合 ${config.round} 无法找到 50/50 平分线`);
     assert.equal(config.generator.conservationFailures, 0, `回合 ${config.round} 存在面积不守恒切割`);
     assert.ok(config.generator.conservationMaxAbs <= acceptance.maxConservationError, `回合 ${config.round} 面积守恒误差过大`);
+    const expectedFamily = config.round <= 3 || config.round % 2 === 1 ? 'polygon' : 'curve';
+    assert.equal(config.generator.families[expectedFamily], SAMPLE_COUNT, `回合 ${config.round} 未保持 ${expectedFamily} 族交替`);
+    const range = expectedFamily === 'curve' ? acceptance.requiredCurveVertexRange : acceptance.requiredPolygonVertexRange;
     const vertices = Object.keys(config.generator.vertices).map(Number);
-    assert.ok(vertices.every((count) => count >= acceptance.requiredVertexRange[0] && count <= acceptance.requiredVertexRange[1]), `回合 ${config.round} 曲线轮廓采样点数不在允许范围`);
+    assert.ok(vertices.every((count) => count >= range[0] && count <= range[1]), `回合 ${config.round} ${expectedFamily} 顶点数不在允许范围`);
     for (const strategy of STRATEGIES) {
       const data = config.strategies[strategy];
       assert.ok(data.passRate <= acceptance.maxPerConfigPassRate, `回合 ${config.round} 的${strategy}固定切法通过率 ${(data.passRate * 100).toFixed(1)}% 超过阈值`);
     }
   }
+
+  const animalKinds = new Set(result.configs.flatMap(config => Object.keys(config.generator.kinds).filter(kind => acceptance.requiredAnimalKinds.includes(kind))));
+  assert.deepEqual(Array.from(animalKinds).sort(), acceptance.requiredAnimalKinds.slice().sort(), '当前挑战未覆盖四种动物轮廓');
 
   const rows = flattenStrategies(result);
   for (const strategy of STRATEGIES) {
@@ -212,5 +220,5 @@ if (process.argv.includes('--record-current')) {
   assertCurrent(current, metrics);
   const rows = flattenStrategies(current);
   const average = rows.reduce((sum, row) => sum + row.passRate, 0) / rows.length;
-  console.log(`通过：${SAMPLE_COUNT * CONFIGS.length} 个固定种子图形；生成器有效性、曲线采样点数、面积守恒、50/50 平分线及固定策略反破解检查通过；固定策略平均通过率 ${(average * 100).toFixed(1)}%。`);
+  console.log(`通过：${SAMPLE_COUNT * CONFIGS.length} 个固定种子图形；生成器有效性、曲边/多边形族交替、动物覆盖、面积守恒、50/50 平分线及固定策略反破解检查通过；固定策略平均通过率 ${(average * 100).toFixed(1)}%。`);
 }

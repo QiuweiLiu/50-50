@@ -396,41 +396,106 @@ const Geometry = (() => {
   return {area,clip,split,segments,intersections,hull,valid,cross,triangulate};
 })();
 const ShapeGenerator = (() => {
+  // 曲边轮廓使用显式三次贝塞尔段；尖耳、喙、尾鳍和背鳍保留清楚的局部特征。
+  const C=(c1,c2,to)=>({c1,c2,to});
   const silhouettes=[
-    {name:'猫',anchors:[{x:240,y:-20},{x:190,y:-80},{x:125,y:-205},{x:78,y:-105},{x:10,y:-110},{x:-55,y:-205},{x:-82,y:-92},{x:-145,y:-50},{x:-195,y:38},{x:-252,y:30},{x:-320,y:-20},{x:-270,y:92},{x:-170,y:120},{x:-125,y:210},{x:-80,y:210},{x:-90,y:65},{x:15,y:60},{x:55,y:205},{x:102,y:205},{x:102,y:30},{x:195,y:30}]},
-    {name:'鸟',anchors:[{x:270,y:-28},{x:215,y:-80},{x:130,y:-125},{x:72,y:-104},{x:18,y:-160},{x:-82,y:-122},{x:-24,y:-38},{x:-148,y:-62},{x:-252,y:-138},{x:-205,y:-8},{x:-260,y:122},{x:-122,y:62},{x:-5,y:130},{x:125,y:118},{x:212,y:65}]},
-    {name:'鲸',anchors:[{x:285,y:0},{x:232,y:-70},{x:145,y:-120},{x:80,y:-165},{x:30,y:-120},{x:-70,y:-95},{x:-160,y:-60},{x:-250,y:-138},{x:-215,y:-18},{x:-280,y:108},{x:-145,y:48},{x:-35,y:120},{x:100,y:128},{x:218,y:76}]},
-    {name:'鱼',anchors:[{x:280,y:-8},{x:222,y:-72},{x:120,y:-128},{x:0,y:-116},{x:-122,y:-70},{x:-252,y:-155},{x:-208,y:-18},{x:-266,y:140},{x:-120,y:62},{x:0,y:118},{x:128,y:104},{x:222,y:56}]},
+    {name:'猫',start:{x:-238,y:224},segments:[
+      C({x:-343,y:217},{x:-371,y:105},{x:-322,y:63}),
+      C({x:-299.6,y:40.6},{x:-275.8,y:60.2},{x:-285.6,y:88.2}),
+      C({x:-323.4,y:135.8},{x:-294,y:187.6},{x:-219.8,y:184.8}),
+      C({x:-211.4,y:93.8},{x:-173.6,y:28},{x:-106.4,y:-7}),
+      C({x:-98,y:-44.8},{x:-88.2,y:-79.8},{x:-60.2,y:-106.4}),
+      C({x:-65.8,y:-137.2},{x:-72.8,y:-190.4},{x:-77,y:-215.6}),
+      C({x:-51.8,y:-194.6},{x:-22.4,y:-173.6},{x:-5.6,y:-166.6}),
+      C({x:9.8,y:-177.8},{x:28,y:-177.8},{x:40.6,y:-170.8}),
+      C({x:60.2,y:-197.4},{x:86.8,y:-211.4},{x:106.4,y:-228.2}),
+      C({x:103.6,y:-194.6},{x:107.8,y:-162.4},{x:116.2,y:-138.6}),
+      C({x:148.4,y:-112},{x:170.8,y:-85.4},{x:149.8,y:-61.6}),
+      C({x:161,y:-56},{x:179.2,y:-58.8},{x:179.2,y:-44.8}),
+      C({x:182,y:-23.8},{x:155.4,y:-9.8},{x:127.4,y:-5.6}),
+      C({x:103.6,y:49},{x:100.8,y:96.6},{x:105,y:162.4}),
+      C({x:141.4,y:172.2},{x:168,y:191.8},{x:149.8,y:211.4}),
+      C({x:123.2,y:222.6},{x:72.8,y:222.6},{x:47.6,y:217}),
+      C({x:37.8,y:203},{x:39.2,y:140},{x:37.8,y:100.8}),
+      C({x:19.6,y:114.8},{x:1.4,y:140},{x:-2.8,y:163.8}),
+      C({x:28,y:203},{x:28,y:219.8},{x:7,y:225.4}),
+      C({x:-54.6,y:246.4},{x:-116.2,y:245},{x:-163.8,y:231}),
+      C({x:-187.6,y:225.4},{x:-211.4,y:224},{x:-238,y:224})]},
+    {name:'兔',start:{x:-190,y:150},segments:[
+      C({x:-250,y:145},{x:-285,y:95},{x:-270,y:55}),C({x:-285,y:-5},{x:-275,y:-65},{x:-245,y:-80}),
+      C({x:-220,y:-95},{x:-198,y:-130},{x:-170,y:-125}),C({x:-168,y:-190},{x:-200,y:-275},{x:-178,y:-320}),
+      C({x:-160,y:-345},{x:-140,y:-360},{x:-122,y:-345}),C({x:-110,y:-280},{x:-115,y:-190},{x:-110,y:-130}),
+      C({x:-95,y:-205},{x:-67,y:-295},{x:-52,y:-330}),C({x:-25,y:-350},{x:-8,y:-340},{x:2,y:-315}),
+      C({x:-12,y:-245},{x:-10,y:-155},{x:-20,y:-92}),C({x:18,y:-85},{x:35,y:-50},{x:58,y:-55}),
+      C({x:75,y:-50},{x:97,y:-20},{x:100,y:-4}),C({x:98,y:12},{x:82,y:40},{x:58,y:35}),
+      C({x:38,y:42},{x:22,y:75},{x:5,y:78}),C({x:18,y:110},{x:60,y:150},{x:38,y:166}),
+      C({x:25,y:185},{x:12,y:192},{x:-5,y:185}),C({x:-25,y:180},{x:-20,y:135},{x:-58,y:110}),
+      C({x:-77,y:135},{x:-82,y:190},{x:-108,y:185}),C({x:-132,y:190},{x:-145,y:182},{x:-160,y:176}),
+      C({x:-175,y:175},{x:-180,y:160},{x:-190,y:150})]},
+    {name:'鸭',start:{x:-308,y:14},segments:[
+      C({x:-266,y:35},{x:-231,y:47.6},{x:-196,y:53.2}),
+      C({x:-147,y:14},{x:-96.6,y:-16.8},{x:-60.2,y:-8.4}),
+      C({x:-60.2,y:-53.2},{x:-53.2,y:-85.4},{x:-19.6,y:-106.4}),
+      C({x:-49,y:-130.2},{x:-29.4,y:-201.6},{x:16.8,y:-219.8}),
+      C({x:63,y:-253.4},{x:109.2,y:-245},{x:134.4,y:-221.2}),
+      C({x:159.6,y:-201.6},{x:175,y:-170.8},{x:166.6,y:-138.6}),
+      C({x:190.4,y:-140},{x:211.4,y:-131.6},{x:225.4,y:-126}),
+      C({x:240.8,y:-123.2},{x:252,y:-112},{x:235.2,y:-100.8}),
+      C({x:210,y:-86.8},{x:183.4,y:-81.2},{x:162.4,y:-82.6}),
+      C({x:163.8,y:-57.4},{x:151.2,y:-25.2},{x:117.6,y:-12.6}),
+      C({x:162.4,y:0},{x:198.8,y:39.2},{x:201.6,y:77}),
+      C({x:208.6,y:127.4},{x:180.6,y:177.8},{x:123.2,y:197.4}),
+      C({x:43.4,y:218.4},{x:-81.2,y:224},{x:-145.6,y:194.6}),
+      C({x:-201.6,y:182},{x:-243.6,y:156.8},{x:-245,y:117.6}),
+      C({x:-246.4,y:88.2},{x:-284.2,y:46.2},{x:-308,y:14})]},
+    {name:'鲸',start:{x:-220,y:80},segments:[
+      C({x:-270,y:78},{x:-325,y:60},{x:-305,y:32}),C({x:-312,y:0},{x:-295,y:-20},{x:-255,y:-2}),
+      C({x:-295,y:-35},{x:-315,y:-60},{x:-325,y:-70}),C({x:-300,y:-60},{x:-250,y:-40},{x:-200,y:-28}),
+      C({x:-185,y:-50},{x:-172,y:-82},{x:-145,y:-82}),C({x:-105,y:-100},{x:-70,y:-135},{x:-35,y:-118}),
+      C({x:-5,y:-130},{x:5,y:-172},{x:10,y:-190}),C({x:30,y:-172},{x:44,y:-138},{x:54,y:-112}),
+      C({x:90,y:-112},{x:118,y:-112},{x:150,y:-105}),C({x:180,y:-98},{x:210,y:-75},{x:235,y:-68}),
+      C({x:255,y:-62},{x:285,y:-38},{x:260,y:-24}),C({x:270,y:-8},{x:292,y:8},{x:270,y:12}),
+      C({x:252,y:22},{x:235,y:42},{x:205,y:32}),C({x:174,y:64},{x:150,y:105},{x:120,y:98}),
+      C({x:82,y:112},{x:60,y:133},{x:30,y:123}),C({x:-15,y:128},{x:-35,y:108},{x:-70,y:112}),
+      C({x:-105,y:112},{x:-122,y:72},{x:-155,y:75}),C({x:-190,y:82},{x:-210,y:66},{x:-220,y:80})]},
   ];
-  const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
-  function sampleOutline(anchors,samples=6){
-    const points=[];
-    for(let i=0;i<anchors.length;i++){
-      const prev=anchors[(i+anchors.length-1)%anchors.length],current=anchors[i],next=anchors[(i+1)%anchors.length];
-      const start=lerp(prev,current,.28),end=lerp(current,next,.28);
-      for(let j=0;j<samples;j++){const t=j/samples,u=1-t;points.push({x:u*u*start.x+2*u*t*current.x+t*t*end.x,y:u*u*start.y+2*u*t*current.y+t*t*end.y});}
-    }
+  function cubicPoint(p0,c1,c2,p3,t){const u=1-t;return{x:u*u*u*p0.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*p3.y};}
+  function samplePath(shape,samples=8){
+    const points=[];let current=shape.start;
+    for(const segment of shape.segments){for(let i=0;i<samples;i++)points.push(cubicPoint(current,segment.c1,segment.c2,segment.to,i/samples));current=segment.to;}
     return points;
   }
-  function transform(points,random,rotation){
-    const sx=.9+random()*.2,sy=.88+random()*.24,shear=(random()-.5)*.22,mirror=random()<.5?-1:1,c=Math.cos(rotation),s=Math.sin(rotation);
-    return points.map(point=>{const x=point.x*mirror*sx,y=point.y*sy+point.x*shear;return{x:x*c-y*s,y:x*s+y*c};});
+  function transform(points,random,rotation,mirror=true){
+    const sx=.94+random()*.12,sy=.94+random()*.12,shear=(random()-.5)*.06,flip=mirror&&random()<.5?-1:1,c=Math.cos(rotation),s=Math.sin(rotation);
+    return points.map(point=>{const x=point.x*flip*sx,y=point.y*sy+point.x*shear;return{x:x*c-y*s,y:x*s+y*c};});
+  }
+  function fit(points,maxWidth=640,maxHeight=540){
+    const xs=points.map(point=>point.x),ys=points.map(point=>point.y),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),cx=(minX+maxX)/2,cy=(minY+maxY)/2,scale=Math.min(1,maxWidth/(maxX-minX),maxHeight/(maxY-minY));
+    return points.map(point=>({x:500+(point.x-cx)*scale,y:400+(point.y-cy)*scale}));
+  }
+  function createPolygon(round,random){
+    const count=4+Math.floor(random()*5),start=-1.72+random()*.18,span=4.34+random()*.34,rx=220+random()*70,ry=185+random()*60,phase=random()*Math.PI*2,points=[];
+    // 只取一段偏心椭圆弧，再用弦闭合；半径扰动制造面积偏置，避免中心对称固定解。
+    for(let i=0;i<count;i++){const theta=start+span*i/(count-1),radial=1+.13*Math.sin(theta*2+phase)+.06*(random()-.5);points.push({x:rx*radial*Math.cos(theta),y:ry*(1+.1*Math.cos(theta+phase))*radial*Math.sin(theta)});}
+    const rotation=random()*Math.PI*2,transformed=transform(points,random,rotation,false),poly=fit(transformed,640,500);poly.kind='不规则多边形';poly.family='polygon';return poly;
   }
   function create(round,random){
-    if(round<=3){
-      const w=round===1?430+random()*45:400+random()*75,h=round===1?320+random()*35:300+random()*100,skew=round===1?0:round===2?45+random()*65:75+random()*80,top=round===3?.74+random()*.2:1;
-      const points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}],rotation=round===1?0:(random()-.5)*.42,c=Math.cos(rotation),s=Math.sin(rotation),poly=points.map(point=>({x:500+point.x*c-point.y*s,y:400+point.x*s+point.y*c}));
-      poly.kind=round===1?'矩形':'四边形';return poly;
+    if(round<=3||round%2===1){
+      if(round<=3){
+        const w=round===1?430+random()*45:400+random()*75,h=round===1?320+random()*35:300+random()*100,skew=round===1?0:round===2?45+random()*65:75+random()*80,top=round===3?.74+random()*.2:1;
+        const points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}],rotation=round===1?0:(random()-.5)*.42,c=Math.cos(rotation),s=Math.sin(rotation),poly=points.map(point=>({x:500+point.x*c-point.y*s,y:400+point.x*s+point.y*c}));
+        poly.kind=round===1?'矩形':'四边形';poly.family='polygon';return poly;
+      }
+      return createPolygon(round,random);
     }
-    const shape=silhouettes[Math.floor(random()*silhouettes.length)],rotation=random()*Math.PI*2,points=transform(sampleOutline(shape.anchors,6),random,rotation),xs=points.map(point=>point.x),ys=points.map(point=>point.y),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2,width=Math.max(...xs)-Math.min(...xs),height=Math.max(...ys)-Math.min(...ys),scale=Math.min(1,640/width,540/height),poly=points.map(point=>({x:500+(point.x-cx)*scale,y:400+(point.y-cy)*scale}));
-    poly.kind=shape.name;return poly;
+    const shape=silhouettes[Math.floor(random()*silhouettes.length)],rotation=(random()-.5)*(Math.PI*16/180),points=transform(samplePath(shape,8),random,rotation),poly=fit(points,640,540);poly.kind=shape.name;poly.family='curve';return poly;
   }
   function generate(round,random=Math.random){
     for(let attempt=0;attempt<10;attempt++){const poly=create(round,random);if(Geometry.valid(poly))return poly;}
     const poly=create(round,()=>.37);if(Geometry.valid(poly))return poly;throw new Error('无法生成有效图形');
   }
   function difficulty(round){return{tolerance:round<=3?6:round<=8?4:3,seconds:round<=3?12:round<=8?9:Math.max(4.5,7.5-(round-9)*.16)};}
-  return {generate,difficulty,kinds:silhouettes.map(shape=>shape.name),sampleOutline:(name,samples=6)=>{const shape=silhouettes.find(item=>item.name===name)||silhouettes[0];return sampleOutline(shape.anchors,samples);}};
+  return {generate,difficulty,kinds:silhouettes.map(shape=>shape.name),sampleOutline:(name,samples=8)=>{const shape=silhouettes.find(item=>item.name===name)||silhouettes[0];return samplePath(shape,samples);}};
 })();
 </script>
 <script id="scoring">
@@ -630,9 +695,33 @@ const Renderer={
   polygon(poly,color,dx=0,dy=0){this.parts([poly],color,dx,dy);},
   fireworks(now){
     if(reducedMotion.matches||state.phase!=='reveal'||state.judgment?.verdict!=='PERFECT')return;
-    const elapsed=(now-state.revealAt)/1000;ctx.save();ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
-    const bursts=[[.18,.24,0],[.82,.26,.12],[.72,.78,.25]];
-    for(const [x,y,delay] of bursts){const t=elapsed-.16-delay;if(t<0||t>1.05)continue;ctx.globalAlpha=.65*(1-t/1.05);for(let i=0;i<12;i++){const angle=i*Math.PI/6+delay*3,distance=(1-Math.exp(-t*4))*Math.min(view.width*.13,64),px=x*view.width+Math.cos(angle)*distance,py=y*view.height+Math.sin(angle)*distance+t*t*12;ctx.strokeStyle=['#D66347','#526b52','#b59a62'][i%3];ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px-Math.cos(angle)*4,py-Math.sin(angle)*4);ctx.stroke();}}
+    const elapsed=(now-state.revealAt)/1000,colors=['#b69255','#bd624a','#698069'];
+    const noise=i=>{const value=Math.sin(i*17.13)*43758.54;return value-Math.floor(value);};
+    ctx.save();ctx.setTransform(view.dpr,0,0,view.dpr,0,0);ctx.lineCap='round';
+    for(const [bx,by,delay] of [[.18,.23,0],[.82,.25,.14],[.73,.78,.28]]){
+      const time=elapsed-.08-delay;if(time<0||time>1.5)continue;
+      const x=bx*view.width,y=by*view.height,radius=Math.min(view.width*.16,view.height*.11,72),gravity=Math.min(17,view.height*.028),launch=.22;
+      if(time<launch){
+        const progress=time/launch,travel=Math.min(view.height*.18,80),head=y+travel*(1-progress),tail=head+Math.min(14,travel*progress);
+        ctx.globalAlpha=.65;ctx.strokeStyle=colors[0];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,tail);ctx.lineTo(x,head);ctx.stroke();ctx.fillStyle='#fff5dc';ctx.beginPath();ctx.arc(x,head,1.8,0,Math.PI*2);ctx.fill();continue;
+      }
+      const t=time-launch;if(t>1.18)continue;
+      const fade=(1-t/1.18)**1.4;
+      if(t<.2){
+        const bloom=ctx.createRadialGradient(x,y,0,x,y,26);bloom.addColorStop(0,'rgba(255,241,198,.65)');bloom.addColorStop(1,'rgba(255,241,198,0)');ctx.globalAlpha=1-t/.2;ctx.fillStyle=bloom;ctx.fillRect(x-26,y-26,52,52);
+      }
+      for(let i=0;i<28;i++){
+        const angle=i*Math.PI*2/28+delay+(noise(i)-.5)*.07,speed=.62+noise(i+41)*.38;
+        const position=age=>{const d=radius*speed*(1-Math.exp(-age*4.5));return{x:x+Math.cos(angle)*d,y:y+Math.sin(angle)*d+age*age*gravity};};
+        const head=position(t),tail=position(Math.max(0,t-.16)),color=colors[i%3];
+        ctx.globalAlpha=fade*(.65+noise(i+7)*.3);ctx.strokeStyle=color;ctx.lineWidth=i%4===0?1.2:.8;ctx.shadowColor=color;ctx.shadowBlur=3;
+        ctx.beginPath();ctx.moveTo(tail.x,tail.y);ctx.lineTo(head.x,head.y);ctx.stroke();ctx.fillStyle=color;ctx.beginPath();ctx.arc(head.x,head.y,i%4===0?1.1:.7,0,Math.PI*2);ctx.fill();
+        if(i%5===0&&t>.32&&t<.85){
+          const glint=Math.sin((t-.32)/.53*Math.PI);ctx.globalAlpha=fade*glint*.65;ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(head.x-2.4,head.y);ctx.lineTo(head.x+2.4,head.y);ctx.moveTo(head.x,head.y-2.4);ctx.lineTo(head.x,head.y+2.4);ctx.stroke();
+        }
+      }
+      ctx.shadowBlur=0;
+    }
     ctx.restore();
   },
   line(a,b,color,width=2,dash=[]){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);},
