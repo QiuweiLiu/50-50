@@ -47,7 +47,7 @@ dialog{border:1px solid var(--rule);background:var(--paper);color:var(--ink);pad
 @media(max-width:600px) and (max-height:700px){.header{height:64px}.hud{padding-top:16px}.workspace.play{padding-top:12px}.workspace.play .board{height:clamp(180px,calc(100svh - 312px),400px)}.play-bottom{padding:8px 0 18px;gap:16px}.target strong{font-size:28px}.target .label{font-size:8px;letter-spacing:.7px}.footer{height:44px}.reveal .percentages{font-size:34px}.reveal .verdict{font-size:10px}.instruction{font-size:8px;letter-spacing:.3px}}
 @media(max-height:650px) and (min-width:601px){.header{height:76px}.workspace{padding:25px 0;min-height:360px}.board{height:330px}h1{font-size:100px;margin:16px 0}.description{margin-bottom:18px}.footer{height:45px}.workspace.play .board{height:300px}.hud{padding-top:16px}.play-bottom{padding-bottom:18px}.end{padding:25px 0}.final-score{font-size:90px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.primary:hover{transform:none}}
-/* Chinese text uses system fonts and relaxed spacing; numerical typography stays intact. */
+/* 中文采用系统字体并放宽字距，数字保留原有排版。 */
 .tagline{letter-spacing:.02em;line-height:1.3}.paused h2,.end h2,dialog h2{letter-spacing:0}
 .eyebrow,.label,.micro,.footer,.text-button,.board-tag,.primary,.intro-note,.home-caption,.instruction,.cut-hint,.reveal .reward{letter-spacing:.6px}
 .reveal .verdict{font-size:14px;letter-spacing:2px}dialog .rules{line-height:2}
@@ -91,13 +91,13 @@ dialog{border:1px solid var(--rule);background:var(--paper);color:var(--ink);pad
 <dialog id="help" aria-labelledby="help-title"><button class="text-button close" id="help-close" aria-label="关闭玩法说明">关闭 ×</button><div class="eyebrow">玩法很简单</div><h2 id="help-title">目标，就是一半。</h2><p>拖动鼠标或手指划线，松手完成切割。这一刀会沿直线无限延伸，只显示穿过图形的部分。</p><p>让两边面积尽量接近 50%，即可保住生命并累计连击。偏差过大或时间耗尽会损失一条生命。短拖动、没有穿过图形或仅与边缘相切，都不算有效切割。</p><p class="rules">完美平分：误差 ≤ 0.5 个百分点<br>非常精准：误差 ≤ 2 个百分点<br>合格：误差 ≤ 当轮容差（8 → 6 → 5）<br>限时：18 → 15 → 13 秒，最低 7 秒</p><p>得分 = 四舍五入［1000 ×（1 − 误差 /（容差 + 2））× 连击倍率］。每多一次连续成功，倍率增加 10%，最高 2 倍。失败不计分。</p><p>键盘操作：选中画布后，↑ ↓ 移动直线，← → 旋转，回车键切割，Shift 键精细调整，Esc 键暂停或继续。浏览器允许存储时，最高分和最高连击会保存在本设备。</p><button class="primary" id="help-done">明白了 <span class="arrow" aria-hidden="true">→</span></button></dialog>
 <script id="geometry">
 'use strict';
-// All geometry uses the same 1000 × 800 logical plane, independent of display pixels.
+// 所有几何计算统一使用 1000 × 800 逻辑坐标，与屏幕像素无关。
 const Geometry = (() => {
   const EPS = 1e-8;
   const cross = (a, b, p) => (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
   function area(poly) {
     if (poly.length < 3) return 0;
-    // Translate to the first vertex to reduce cancellation for distant coordinates.
+    // 以首个顶点为原点，减少较远坐标相减带来的浮点消去误差。
     const o = poly[0];
     let sum = 0;
     for (let i=1; i<poly.length-1; i++) sum += cross(o, poly[i], poly[i+1]);
@@ -160,7 +160,7 @@ const ShapeGenerator = (() => {
       points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}];
     } else {
       const n=round<=8?(round%2?5:4):5+Math.floor(random()*4);
-      // Affine transforms of points on a circle remain strictly convex.
+      // 圆周点经过仿射变换后仍构成严格凸多边形。
       const phase=random()*Math.PI*2,rx=245+random()*55,ry=210+random()*45,shear=(random()-0.5)*0.45;
       points=Array.from({length:n},(_,i)=>{
         const angle=phase+(i+(random()-0.5)*0.52)*Math.PI*2/n;
@@ -177,12 +177,12 @@ const ShapeGenerator = (() => {
     return poly;
   }
   function generate(round,random=Math.random) {
-    // Validate every proposed shape before exposing it to the player.
+    // 每个候选图形通过有效性检查后，才交给玩家切割。
     for(let attempt=0;attempt<8;attempt++){
       const poly=create(round,random);
       if(Geometry.valid(poly))return poly;
     }
-    // A bounded regular convex shape keeps the round playable if proposals fail validation.
+    // 候选图形均未通过检查时，使用边界内的规则凸形状保证回合可玩。
     const n=round<=3?4:round<=8?5:6;
     return Array.from({length:n},(_,i)=>{const a=i*Math.PI*2/n+Math.PI/4;return{x:500+260*Math.cos(a),y:400+230*Math.sin(a)};});
   }
