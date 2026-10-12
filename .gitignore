@@ -1,0 +1,8 @@
+# Local project control and temporary material
+.project/
+AGENTS.md
+.scratch/
+outputs/
+experiments/
+.DS_Store
+node_modules/

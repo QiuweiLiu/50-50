@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F5F2EC">
+<meta name="description" content="一刀平分，恰好平衡。划出一条直线，把几何图形分成面积相等的两半。完全离线的精准挑战游戏。">
+<title>50 / 50 — 一刀平分，恰好平衡</title>
+<style>
+:root{--paper:#F5F2EC;--ink:#252525;--red:#D66347;--muted:#8B837A;--text-muted:#70685F;--red-text:#A94D35;--rule:#d9d3ca;--green:#526b52;--mono:'SFMono-Regular',Consolas,'Liberation Mono',monospace}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink)}
+body{font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;transition:background .35s}body.perfect{background:#eaf0e5}
+button{font:inherit;color:inherit;cursor:pointer}button:focus-visible,a:focus-visible,canvas:focus-visible{outline:2px solid var(--red);outline-offset:5px}
+button:disabled{opacity:.35;cursor:default}[hidden]{display:none!important}
+.app{max-width:1440px;min-height:100svh;margin:auto;padding:0 56px;display:flex;flex-direction:column}
+.header{height:110px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule);gap:20px}
+.brand{font-size:24px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}.brand span{color:var(--red);padding:0 5px}
+.edition,.eyebrow,.label,.micro,.footer,.text-button,.status,.board-tag{font:11px/1.6 var(--mono);letter-spacing:1.5px;text-transform:uppercase}
+.edition{color:var(--text-muted);margin-left:26px}.brand-group{display:flex;align-items:center}.header-right{display:flex;align-items:center;gap:28px}
+.record{display:flex;gap:14px;align-items:center}.record .label{color:var(--text-muted);font-size:10px}.record strong{font:14px var(--mono);letter-spacing:1px}
+.text-button{border:0;background:none;padding:10px 0;font-size:10px}.text-button:hover{color:var(--red-text)}
+main{flex:1;display:flex;flex-direction:column}.workspace{display:grid;grid-template-columns:46% 54%;align-items:center;flex:1;min-height:530px;padding:46px 0 34px}
+.intro{position:relative;z-index:1;padding-right:20px}.eyebrow{display:flex;align-items:center;gap:12px;color:var(--text-muted)}.eyebrow:before{content:'';width:22px;height:2px;background:var(--red)}
+h1{font-size:clamp(80px,10.9vw,158px);line-height:1;letter-spacing:-.09em;margin:30px 0 24px;font-weight:800;white-space:nowrap}h1 .slash{color:var(--red);display:inline-block;font-weight:400;margin:0 .045em;transform:translateY(-.035em)}
+.tagline{font-weight:800;font-size:clamp(24px,2.7vw,38px);letter-spacing:-1.5px;line-height:1.1;margin:0 0 22px}.description{font-size:14px;line-height:1.8;color:#736b63;max-width:320px;margin:0 0 30px}
+.primary{background:var(--ink);color:var(--paper);border:0;padding:21px 26px;display:inline-flex;align-items:center;justify-content:space-between;gap:38px;min-width:240px;font:12px var(--mono);letter-spacing:1.3px;transition:background .15s,transform .15s}
+.primary:hover{background:var(--red-text);transform:translateY(-2px)}.primary:active{transform:translateY(0)}.primary .arrow{font-family:Arial;font-size:24px;line-height:.6}.intro-note{color:var(--text-muted);font:10px var(--mono);letter-spacing:1px;margin:18px 0 0}
+.board{position:relative;height:490px;min-width:0;isolation:isolate}.board:before,.board:after{content:'';position:absolute;pointer-events:none;width:16px;height:16px;border-color:var(--rule);border-style:solid;z-index:-1}.board:before{left:0;top:0;border-width:1px 0 0 1px}.board:after{right:0;bottom:0;border-width:0 1px 1px 0}
+canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair}
+.board-tag{position:absolute;color:var(--text-muted);font-size:9px;left:24px;top:12px;pointer-events:none}.board-tag.right{left:auto;right:24px;top:auto;bottom:12px}
+.home-marker{position:absolute;right:24px;top:12px;font:10px var(--mono);color:var(--red-text);letter-spacing:1px}.home-caption{font:10px var(--mono);letter-spacing:1.5px;color:var(--text-muted);position:absolute;left:24px;bottom:12px}
+.hud{display:flex;align-items:center;justify-content:space-between;padding:28px 0 0;gap:20px}.stat-group{display:flex;gap:56px}.stat .label{display:block;color:var(--text-muted);font-size:9px;margin-bottom:7px}.stat strong{font-size:28px;line-height:1;font-weight:500;letter-spacing:-1px;font-variant-numeric:tabular-nums}.stat.combo strong{color:var(--red)}
+.lives{display:flex;align-items:center;gap:8px;margin-left:auto}.life{width:12px;height:12px;background:var(--red);border-radius:50%;transition:background .2s,transform .2s}.life.lost{background:none;border:1px solid #c7bfb4;transform:scale(.8)}.lives .label{color:var(--text-muted);font-size:9px;margin-right:12px}.pause-button{margin-left:26px}
+.workspace.play{display:block;min-height:0;padding:8px 0 0;flex:1}.workspace.play .board{height:clamp(300px,calc(100svh - 352px),630px);max-width:960px;margin:0 auto}
+.play-bottom{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:end;gap:48px;padding:12px 0 30px}.target strong{display:block;font-size:38px;letter-spacing:-2px;line-height:1.2}.target .label,.clock .label{color:var(--text-muted);font-size:9px}.clock-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clock-value{font:16px var(--mono);font-variant-numeric:tabular-nums}.track{height:3px;background:#ded8cd;overflow:hidden}.track span{display:block;background:var(--ink);height:100%;transform-origin:left}.clock.urgent .track span,.clock.urgent .clock-value{color:var(--red);background:var(--red)}.clock.urgent .clock-value{background:none;color:var(--red-text)}.cut-hint{font:10px/1.8 var(--mono);text-align:right;letter-spacing:1px;color:var(--text-muted)}
+.footer{border-top:1px solid var(--rule);height:64px;display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--text-muted);gap:16px}.footer .dot{display:inline-block;width:5px;height:5px;background:var(--red);border-radius:50%;margin-right:8px}.footer .signature{letter-spacing:.5px}
+.instruction{position:absolute;top:7%;left:0;width:100%;text-align:center;color:var(--text-muted);font:10px var(--mono);letter-spacing:1.3px;pointer-events:none;transition:opacity .3s}.instruction.invalid{color:var(--red-text)}
+.reveal{position:absolute;left:0;width:100%;bottom:5%;text-align:center;pointer-events:none;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s}.reveal.visible{opacity:1;transform:none}.reveal .verdict{font:11px var(--mono);letter-spacing:4px;margin:0 0 8px}.reveal .percentages{font-size:clamp(35px,5vw,62px);font-weight:700;line-height:1;letter-spacing:-3px;font-variant-numeric:tabular-nums}.reveal .divider{color:var(--text-muted);font-weight:400;margin:0 8px}.reveal .second{color:var(--red)}.reveal .reward{font:10px var(--mono);letter-spacing:1px;margin:10px 0 0;color:var(--text-muted)}.reveal.good .verdict{color:var(--green)}.reveal.miss .verdict{color:var(--red-text)}
+.paused{position:absolute;inset:0;background:rgba(245,242,236,.94);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:25px;z-index:3}.paused h2{font-size:48px;letter-spacing:-3px;margin:0}.paused p{font:11px var(--mono);color:var(--text-muted);margin:0}
+.end{display:grid;grid-template-columns:1.1fr 1fr;gap:100px;align-items:center;max-width:1020px;width:100%;margin:auto;padding:50px 0}.end h2{font-size:42px;line-height:1;letter-spacing:-2px;margin:24px 0 8px}.final-score{font-size:clamp(80px,11vw,144px);line-height:1;letter-spacing:-.065em;font-weight:800;margin:18px 0 24px}.end-detail{border-top:1px solid var(--rule);padding:19px 0;display:flex;align-items:center;justify-content:space-between;gap:20px}.end-detail .label{color:var(--text-muted);font-size:10px}.end-detail strong{font:20px var(--mono)}.end .best-cut strong{color:var(--red-text);font-size:16px}.end-note{font-size:13px;line-height:1.7;color:var(--text-muted);margin:24px 0 0}.new-record{color:var(--red-text);font:10px var(--mono);letter-spacing:2px;margin:0 0 22px}
+.pulse{animation:pulse var(--combo-duration,.3s) ease-out}@keyframes pulse{50%{transform:scale(var(--combo-scale,1.14))}}
+dialog{border:1px solid var(--rule);background:var(--paper);color:var(--ink);padding:38px;max-width:460px;width:calc(100% - 40px)}dialog::backdrop{background:rgba(37,37,37,.3)}dialog h2{font-size:36px;letter-spacing:-2px;margin:20px 0}dialog p{font-size:14px;line-height:1.75;color:#736b63}dialog .close{float:right}dialog .rules{font:11px/2 var(--mono);letter-spacing:0}dialog .primary{margin-top:12px;width:100%}
+@media(min-width:1440px){h1{font-size:158px}}
+@media(max-width:900px){.app{padding:0 30px}.edition{display:none}.workspace{grid-template-columns:48% 52%}.board{height:420px}h1{font-size:11vw}.description{max-width:260px}.stat-group{gap:34px}.end{gap:50px}.play-bottom{gap:24px}}
+@media(max-width:600px){.app{padding:0 22px;padding-bottom:env(safe-area-inset-bottom)}.header{height:76px}.brand{font-size:22px}.header-right{gap:17px}.record{gap:8px}.record .label{font-size:8px;letter-spacing:.7px}.record strong{font-size:12px}.text-button{font-size:9px;letter-spacing:.8px}.workspace{display:flex;flex-direction:column;align-items:stretch;padding:32px 0 20px;min-height:0}.intro{padding-right:0}.eyebrow{font-size:9px;letter-spacing:1.2px}h1{font-size:clamp(86px,22vw,130px);margin:22px 0 15px}.tagline{font-size:28px;letter-spacing:-1.3px;margin-bottom:14px}.description{font-size:12px;line-height:1.7;max-width:290px;margin-bottom:22px}.primary{padding:18px 22px;min-width:220px;font-size:11px}.intro-note{font-size:9px;margin-top:14px}.board{height:clamp(190px,28svh,270px);margin-top:28px}.board-tag,.home-marker,.home-caption{font-size:8px;letter-spacing:.6px}.board-tag{left:12px;top:8px}.home-marker{right:12px;top:8px}.home-caption{left:12px;bottom:8px}.board-tag.right{right:12px;bottom:8px}.footer{height:55px;font-size:8px;letter-spacing:.5px}.footer .signature{font-size:8px}.hud{padding-top:24px;gap:10px}.stat-group{gap:20px;min-width:0}.stat{min-width:0}.stat .label{font-size:8px;letter-spacing:1px}.stat strong{font-size:clamp(18px,5.5vw,24px)}#score{font-size:clamp(17px,5vw,23px)}.lives{gap:5px}.life{width:9px;height:9px}.lives .label{display:none}.pause-button{margin-left:8px}.workspace.play{padding-top:18px}.workspace.play .board{margin:0;height:clamp(260px,calc(100svh - 370px),620px)}.play-bottom{grid-template-columns:1fr 1.6fr;gap:24px;padding:12px 0 24px}.target strong{font-size:32px}.cut-hint{grid-column:1/-1;text-align:center;font-size:9px;line-height:1;margin-top:0}.clock-header{margin-bottom:10px}.clock-value{font-size:14px}.reveal{bottom:6%}.reveal .percentages{font-size:40px;letter-spacing:-2px}.reveal .reward{font-size:9px}.instruction{top:34px;font-size:9px;letter-spacing:.8px;padding:0 8px}.end{display:block;padding:38px 0 30px;max-width:400px}.end h2{font-size:36px}.final-score{font-size:96px;margin:18px 0 22px}.end .primary{width:100%}.end-right{margin-top:32px}.end-detail{padding:15px 0}.end-detail strong{font-size:17px}.end-detail .label{font-size:9px}.end-note{font-size:12px}.new-record{margin-bottom:18px}dialog{padding:25px}}
+@media(max-width:360px){.header{gap:12px}.header-right{gap:12px}.header .text-button{white-space:nowrap}.record{gap:6px}}
+@media(max-width:600px) and (max-height:700px){.header{height:64px}.hud{padding-top:16px}.workspace.play{padding-top:12px}.workspace.play .board{height:clamp(180px,calc(100svh - 312px),400px)}.play-bottom{padding:8px 0 18px;gap:16px}.target strong{font-size:28px}.target .label{font-size:8px;letter-spacing:.7px}.footer{height:44px}.reveal .percentages{font-size:34px}.reveal .verdict{font-size:10px}.instruction{font-size:8px;letter-spacing:.3px}}
+@media(max-height:650px) and (min-width:601px){.header{height:76px}.workspace{padding:25px 0;min-height:360px}.board{height:330px}h1{font-size:100px;margin:16px 0}.description{margin-bottom:18px}.footer{height:45px}.workspace.play .board{height:300px}.hud{padding-top:16px}.play-bottom{padding-bottom:18px}.end{padding:25px 0}.final-score{font-size:90px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.primary:hover{transform:none}}
+/* Chinese text uses system fonts and relaxed spacing; numerical typography stays intact. */
+.tagline{letter-spacing:.02em;line-height:1.3}.paused h2,.end h2,dialog h2{letter-spacing:0}
+.eyebrow,.label,.micro,.footer,.text-button,.board-tag,.primary,.intro-note,.home-caption,.instruction,.cut-hint,.reveal .reward{letter-spacing:.6px}
+.reveal .verdict{font-size:14px;letter-spacing:2px}dialog .rules{line-height:2}
+@media(max-width:600px){.header .text-button,.record .label{font-size:10px}.stat .label,.target .label,.clock .label,.end-detail .label{font-size:10px}.instruction,.cut-hint,.reveal .reward,.board-tag{font-size:10px}.reveal .verdict{font-size:13px}.footer{font-size:9px}.intro-note{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+ <div class="brand-group"><div class="brand" aria-label="50 50">50 <span>/</span> 50</div><span class="edition">一刀平分，恰好平衡</span></div>
+ <div class="header-right"><div class="record"><span class="label">历史最高分</span><strong id="record">00000</strong></div><button class="text-button" id="help-button" aria-haspopup="dialog">玩法说明 ↗</button></div>
+</header>
+<main>
+ <section class="hud" id="hud" hidden aria-label="游戏状态">
+  <div class="stat-group"><div class="stat"><span class="label">回合</span><strong id="round">01</strong></div><div class="stat"><span class="label">得分</span><strong id="score">00000</strong></div><div class="stat combo"><span class="label">连击</span><strong id="combo">×0</strong></div></div>
+  <div class="lives" id="lives" aria-label="剩余 3 条生命"><span class="label">生命</span><span class="life"></span><span class="life"></span><span class="life"></span></div><button class="text-button pause-button" id="pause-button">Ⅱ 暂停</button>
+ </section>
+ <section class="workspace" id="workspace">
+  <div class="intro" id="intro"><div class="eyebrow">精准挑战 / 第 001 号</div><h1>50<span class="slash">/</span>50</h1><h2 class="tagline">只划一刀。<br>恰好两半。</h2><p class="description">凭一点直觉，稳住你的手。<br>把图形分成面积相等的两半。<br>你能离完美有多近？</p><button class="primary" id="start">开始挑战 <span class="arrow" aria-hidden="true">↗</span></button><p class="intro-note">三条生命，无尽挑战。</p></div>
+  <div class="board" id="board">
+   <span class="board-tag" id="board-tag">图 01 / 寻找平衡</span><span class="home-marker" id="home-marker">½ + ½ = 1</span>
+   <canvas id="canvas" tabindex="0" aria-label="切割区域。拖动划出直线，松手切割。键盘：上下方向键移动直线，左右方向键旋转，回车键切割。" aria-describedby="instruction"></canvas>
+   <span class="home-caption" id="home-caption">一笔之间，追求精准。</span><span class="board-tag right" id="board-code">50 / 50 — 始于 2026</span>
+   <div class="instruction" id="instruction" role="status" aria-live="polite" hidden>划线穿过图形，松手完成切割。</div>
+   <div class="reveal" id="reveal" role="status" aria-live="polite" aria-atomic="true"><div class="verdict" id="verdict"></div><div class="percentages"><span id="percent-left"></span><span class="divider">/</span><span class="second" id="percent-right"></span></div><p class="reward" id="reward"></p></div>
+   <div class="paused" id="paused" hidden><span class="eyebrow">稍作停顿</span><h2>暂停片刻。</h2><p>当前回合已暂停。</p><button class="primary" id="resume">继续挑战 <span class="arrow" aria-hidden="true">→</span></button></div>
+  </div>
+ </section>
+ <section class="play-bottom" id="play-bottom" hidden>
+  <div class="target"><span class="label">目标 / 面积平分</span><strong>50.0%</strong></div>
+  <div class="clock" id="clock"><div class="clock-header"><span class="label">剩余时间</span><span class="clock-value" id="time">18.0秒</span></div><div class="track" role="progressbar" aria-label="剩余时间" aria-valuemin="0" aria-valuemax="18" aria-valuenow="18" id="timer"><span id="time-bar"></span></div></div>
+  <div class="cut-hint" id="cut-hint">寻找平衡。<br>相信你的眼睛。</div>
+ </section>
+ <section class="end" id="end" hidden aria-labelledby="end-title">
+  <div><div class="eyebrow">你的精准成绩</div><h2 id="end-title">挑战完成。</h2><div class="final-score" id="final-score">0</div><p class="new-record" id="new-record" hidden>↗ 刷新个人纪录</p><button class="primary" id="retry">再挑战一次 <span class="arrow" aria-hidden="true">→</span></button><p class="end-note">每一次尝试，<br>都离完美更近一点。</p></div>
+  <div class="end-right"><div class="end-detail"><span class="label">历史最高分</span><strong id="final-best"></strong></div><div class="end-detail"><span class="label">挑战回合数</span><strong id="final-round"></strong></div><div class="end-detail"><span class="label">本次 / 历史最高连击</span><strong id="final-combo"></strong></div><div class="end-detail best-cut"><span class="label">最精准的一刀</span><strong id="final-cut"></strong></div><p class="micro" style="color:var(--text-muted);margin-top:25px">一刀平分，恰好平衡。</p></div>
+ </section>
+</main>
+<footer class="footer"><span><span class="dot"></span>少一点，准一点。</span><span class="signature" id="footer-note">为平分而生。</span></footer>
+</div>
+<dialog id="help" aria-labelledby="help-title"><button class="text-button close" id="help-close" aria-label="关闭玩法说明">关闭 ×</button><div class="eyebrow">玩法很简单</div><h2 id="help-title">目标，就是一半。</h2><p>拖动鼠标或手指划线，松手完成切割。这一刀会沿直线无限延伸，只显示穿过图形的部分。</p><p>让两边面积尽量接近 50%，即可保住生命并累计连击。偏差过大或时间耗尽会损失一条生命。短拖动、没有穿过图形或仅与边缘相切，都不算有效切割。</p><p class="rules">完美平分：误差 ≤ 0.5 个百分点<br>非常精准：误差 ≤ 2 个百分点<br>合格：误差 ≤ 当轮容差（8 → 6 → 5）<br>限时：18 → 15 → 13 秒，最低 7 秒</p><p>得分 = 四舍五入［1000 ×（1 − 误差 /（容差 + 2））× 连击倍率］。每多一次连续成功，倍率增加 10%，最高 2 倍。失败不计分。</p><p>键盘操作：选中画布后，↑ ↓ 移动直线，← → 旋转，回车键切割，Shift 键精细调整，Esc 键暂停或继续。浏览器允许存储时，最高分和最高连击会保存在本设备。</p><button class="primary" id="help-done">明白了 <span class="arrow" aria-hidden="true">→</span></button></dialog>
+<script id="geometry">
+'use strict';
+// All geometry uses the same 1000 × 800 logical plane, independent of display pixels.
+const Geometry = (() => {
+  const EPS = 1e-8;
+  const cross = (a, b, p) => (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
+  function area(poly) {
+    if (poly.length < 3) return 0;
+    // Translate to the first vertex to reduce cancellation for distant coordinates.
+    const o = poly[0];
+    let sum = 0;
+    for (let i=1; i<poly.length-1; i++) sum += cross(o, poly[i], poly[i+1]);
+    return Math.abs(sum)/2;
+  }
+  function clip(poly, a, b, side) {
+    const output = [];
+    for (let i=0; i<poly.length; i++) {
+      const p = poly[i], q = poly[(i+1)%poly.length];
+      const dp = side*cross(a,b,p), dq = side*cross(a,b,q);
+      const pin = dp >= 0, qin = dq >= 0;
+      if (pin) output.push(p);
+      if (pin !== qin) {
+        const t = dp/(dp-dq);
+        output.push({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+      }
+    }
+    return output;
+  }
+  function split(poly,a,b) {
+    if (Math.hypot(b.x-a.x,b.y-a.y)<EPS) return null;
+    const left = clip(poly,a,b,1), right = clip(poly,a,b,-1);
+    const a1 = area(left), a2 = area(right), total = a1+a2;
+    if (total<EPS || Math.min(a1,a2) <= total*1e-7) return null;
+    return {left,right,a1,a2,percent:a1/total*100,error:Math.abs(a1/total*100-50)};
+  }
+  function intersections(poly,a,b) {
+    const points=[];
+    const add=p=>{if(!points.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<1e-6))points.push(p);};
+    for(let i=0;i<poly.length;i++) {
+      const p=poly[i],q=poly[(i+1)%poly.length],dp=cross(a,b,p),dq=cross(a,b,q);
+      if(Math.abs(dp)<EPS)add(p);
+      if((dp<0&&dq>0)||(dp>0&&dq<0)){const t=dp/(dp-dq);add({x:p.x+t*(q.x-p.x),y:p.y+t*(q.y-p.y)});}
+    }
+    if(points.length<2)return [];
+    const dx=b.x-a.x,dy=b.y-a.y;
+    points.sort((p,q)=>(p.x-q.x)*dx+(p.y-q.y)*dy);
+    return [points[0],points[points.length-1]];
+  }
+  function hull(points) {
+    const sorted=points.slice().sort((a,b)=>a.x-b.x||a.y-b.y);
+    function half(list){const h=[];for(const p of list){while(h.length>=2&&cross(h[h.length-2],h[h.length-1],p)<=EPS)h.pop();h.push(p);}return h;}
+    const lo=half(sorted),hi=half(sorted.slice().reverse());
+    return lo.slice(0,-1).concat(hi.slice(0,-1));
+  }
+  function valid(poly) {
+    if(poly.length<3||area(poly)<55000)return false;
+    const xs=poly.map(p=>p.x),ys=poly.map(p=>p.y),w=Math.max(...xs)-Math.min(...xs),h=Math.max(...ys)-Math.min(...ys);
+    if(w/h<0.48||w/h>2.08)return false;
+    if(poly.some(p=>p.x<140||p.x>860||p.y<100||p.y>700))return false;
+    return poly.every((p,i)=>cross(p,poly[(i+1)%poly.length],poly[(i+2)%poly.length])>EPS);
+  }
+  return {area,clip,split,intersections,hull,valid,cross};
+})();
+const ShapeGenerator = (() => {
+  function create(round,random) {
+    let points;
+    if(round<=3){
+      const w=400+random()*70,h=310+random()*80,skew=round===1?0:60+random()*55,top=round===3?0.76+random()*0.16:1;
+      points=[{x:-w*top/2+skew,y:-h/2},{x:w*top/2+skew,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}];
+    } else {
+      const n=round<=8?(round%2?5:4):5+Math.floor(random()*4);
+      // Affine transforms of points on a circle remain strictly convex.
+      const phase=random()*Math.PI*2,rx=245+random()*55,ry=210+random()*45,shear=(random()-0.5)*0.45;
+      points=Array.from({length:n},(_,i)=>{
+        const angle=phase+(i+(random()-0.5)*0.52)*Math.PI*2/n;
+        const y=Math.sin(angle)*ry;
+        return{x:Math.cos(angle)*rx+shear*y,y};
+      });
+    }
+    const rotation=round===1?0:(random()-0.5)*(round<=3?0.42:1.8);
+    const c=Math.cos(rotation),s=Math.sin(rotation);
+    let poly=Geometry.hull(points.map(p=>({x:500+p.x*c-p.y*s,y:400+p.x*s+p.y*c})));
+    const maxX=Math.max(...poly.map(p=>Math.abs(p.x-500))),maxY=Math.max(...poly.map(p=>Math.abs(p.y-400)));
+    const scale=Math.min(1,340/maxX,280/maxY);
+    poly=poly.map(p=>({x:500+(p.x-500)*scale,y:400+(p.y-400)*scale}));
+    return poly;
+  }
+  function generate(round,random=Math.random) {
+    // Validate every proposed shape before exposing it to the player.
+    for(let attempt=0;attempt<8;attempt++){
+      const poly=create(round,random);
+      if(Geometry.valid(poly))return poly;
+    }
+    // A bounded regular convex shape keeps the round playable if proposals fail validation.
+    const n=round<=3?4:round<=8?5:6;
+    return Array.from({length:n},(_,i)=>{const a=i*Math.PI*2/n+Math.PI/4;return{x:500+260*Math.cos(a),y:400+230*Math.sin(a)};});
+  }
+  function difficulty(round){return{tolerance:round<=3?8:round<=8?6:5,seconds:round<=3?18:round<=8?15:Math.max(7,13-(round-9)*0.28)};}
+  return {generate,difficulty};
+})();
+</script>
+<script id="scoring">
+const Scoring = {
+  evaluate(error,tolerance,combo) {
+    const verdict=error<=0.5?'PERFECT':error<=2?'EXCELLENT':error<=tolerance?'PASS':'MISS';
+    const success=error<=tolerance;
+    const nextCombo=success?combo+1:0;
+    const multiplier=1+Math.min(Math.max(0,nextCombo-1),10)*0.1;
+    const points=success?Math.round(1000*(1-error/(tolerance+2))*multiplier):0;
+    return {verdict,success,combo:nextCombo,multiplier,points};
+  }
+};
+</script>
+<script id="game">
+'use strict';
+const $=id=>document.getElementById(id);
+const canvas=$('canvas'),ctx=canvas.getContext('2d');
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+const Records={
+  key:'5050.records.v1',
+  load(){try{const r=JSON.parse(localStorage.getItem(this.key));return{score:Number.isSafeInteger(r?.score)&&r.score>=0?r.score:0,combo:Number.isSafeInteger(r?.combo)&&r.combo>=0?r.combo:0};}catch{return{score:0,combo:0};}},
+  save(r){try{localStorage.setItem(this.key,JSON.stringify(r));return true;}catch{return false;}}
+};
+const state={phase:'home',round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,poly:ShapeGenerator.generate(5),difficulty:ShapeGenerator.difficulty(1),deadline:0,remaining:0,cut:null,revealAt:0,judgment:null,records:Records.load(),previousBest:0};
+const view={width:0,height:0,scale:1,x:0,y:0,dpr:1};
+const input={pointerId:null,a:null,b:null,clientStart:null,keyLine:null};
+let helpPaused=false,lastTimerText='',hintUntil=0;
+function resetInput(){
+  if(input.pointerId!==null&&canvas.hasPointerCapture(input.pointerId))canvas.releasePointerCapture(input.pointerId);
+  input.pointerId=null;input.a=null;input.b=null;input.clientStart=null;input.keyLine=null;
+}
+function resize(){
+  const rect=canvas.getBoundingClientRect();
+  view.width=rect.width;view.height=rect.height;view.dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(rect.width*view.dpr);canvas.height=Math.round(rect.height*view.dpr);
+  view.scale=Math.min(rect.width/1000,rect.height/800);view.x=(rect.width-1000*view.scale)/2;view.y=(rect.height-800*view.scale)/2;
+  resetInput();Renderer.draw(performance.now());
+}
+function mapPointer(event){const rect=canvas.getBoundingClientRect();return{x:(event.clientX-rect.left-view.x)/view.scale,y:(event.clientY-rect.top-view.y)/view.scale};}
+function updateHUD(){
+  $('record').textContent=String(state.records.score).padStart(5,'0');
+  $('round').textContent=String(state.round).padStart(2,'0');$('score').textContent=String(state.score).padStart(5,'0');$('combo').textContent='×'+state.combo;
+  $('lives').setAttribute('aria-label','剩余 '+state.lives+' 条生命');
+  document.querySelectorAll('.life').forEach((el,i)=>el.classList.toggle('lost',i>=state.lives));
+  $('pause-button').disabled=!['playing','reveal'].includes(state.phase);
+}
+function startRun(){
+  $('help').close();helpPaused=false;
+  resetInput();Object.assign(state,{round:1,lives:3,score:0,combo:0,bestCombo:0,bestCut:null,previousBest:state.records.score});
+  $('intro').hidden=true;$('end').hidden=true;$('workspace').hidden=false;$('workspace').classList.add('play');$('hud').hidden=false;$('play-bottom').hidden=false;
+  $('home-marker').hidden=true;$('home-caption').hidden=true;$('board-code').hidden=true;$('paused').hidden=true;
+  $('board-tag').textContent='图 01 / 一刀平分';$('footer-note').textContent='一刀平分，恰好平衡。';
+  nextRound();resize();canvas.focus({preventScroll:true});
+}
+function nextRound(){
+  resetInput();state.phase='playing';state.cut=null;state.judgment=null;state.poly=ShapeGenerator.generate(state.round);state.difficulty=ShapeGenerator.difficulty(state.round);
+  state.remaining=state.difficulty.seconds;state.deadline=performance.now()+state.remaining*1000;
+  $('reveal').className='reveal';document.body.classList.remove('perfect');$('instruction').hidden=false;
+  $('instruction').className='instruction';$('instruction').textContent=state.round===1?'划线穿过图形，松手完成切割。':'一条直线，面积平分。';
+  $('board-tag').textContent=`图 ${String(state.round).padStart(2,'0')} / ${state.poly.length} 个顶点`;
+  $('cut-hint').innerHTML=`误差不超过 ±${state.difficulty.tolerance}.0 个百分点<br>即可保住生命。`;
+  $('timer').setAttribute('aria-valuemax',state.difficulty.seconds);updateHUD();
+}
+function invalidCut(message){$('instruction').textContent=message;$('instruction').classList.add('invalid');hintUntil=performance.now()+1200;}
+function submitCut(a,b){
+  if(state.phase!=='playing')return;
+  const now=performance.now();
+  if(now>=state.deadline){settle(null,now);return;}
+  const cut=Geometry.split(state.poly,a,b);
+  if(!cut){invalidCut('划线穿过图形，才能切成两块。');return;}
+  settle({...cut,a,b},now);
+}
+function settle(cut,now){
+  if(state.phase!=='playing')return;
+  resetInput();state.phase='reveal';state.revealAt=now;state.remaining=Math.max(0,(state.deadline-now)/1000);state.cut=cut;
+  state.judgment=cut?Scoring.evaluate(cut.error,state.difficulty.tolerance,state.combo):{verdict:'TIME UP',success:false,combo:0,points:0,multiplier:1};
+  const j=state.judgment;state.combo=j.combo;state.score+=j.points;state.bestCombo=Math.max(state.bestCombo,state.combo);
+  if(!j.success)state.lives--;
+  if(cut&&(!state.bestCut||cut.error<state.bestCut.error))state.bestCut={error:cut.error,percent:cut.percent};
+  state.records.score=Math.max(state.records.score,state.score);state.records.combo=Math.max(state.records.combo,state.bestCombo);
+  const stored=Records.save(state.records);
+  if(!stored)$('footer-note').textContent='存储不可用，纪录仅在本次会话保留。';
+  $('instruction').hidden=true;$('verdict').textContent={PERFECT:'完美平分',EXCELLENT:'非常精准',PASS:'合格',MISS:'偏差过大','TIME UP':'时间到'}[j.verdict];
+  $('percent-left').textContent=cut?cut.percent.toFixed(1):'—';$('percent-right').textContent=cut?(100-cut.percent).toFixed(1):'—';
+  $('reward').textContent=j.success?`+${j.points} 分 / 连击 ×${j.combo} / ${j.multiplier.toFixed(1)} 倍`:cut?`偏差 ${cut.error.toFixed(1)} 个百分点 / −1 生命`:'时间耗尽 / −1 生命';
+  $('reveal').className='reveal '+(j.verdict==='PERFECT'?'good':j.success?'':'miss');
+  if(j.verdict==='PERFECT')document.body.classList.add('perfect');
+  if(j.success){$('combo').style.setProperty('--combo-scale',String(1.08+Math.min(j.combo,10)*.012));$('combo').style.setProperty('--combo-duration',(180+Math.min(j.combo,10)*12)+'ms');$('combo').classList.remove('pulse');void $('combo').offsetWidth;$('combo').classList.add('pulse');}
+  updateHUD();
+}
+function finishRun(){
+  state.phase='over';resetInput();document.body.classList.remove('perfect');$('workspace').hidden=true;$('hud').hidden=true;$('play-bottom').hidden=true;$('end').hidden=false;
+  $('final-score').textContent=state.score.toLocaleString('zh-CN');$('final-best').textContent=state.records.score.toLocaleString('zh-CN');$('final-round').textContent=String(state.round).padStart(2,'0');
+  $('final-combo').textContent=`${state.bestCombo} / ${state.records.combo}`;$('final-cut').textContent=state.bestCut?`${state.bestCut.percent.toFixed(1)} / ${(100-state.bestCut.percent).toFixed(1)}`:'尚无有效切割';
+  $('new-record').hidden=state.score<=state.previousBest;$('retry').focus({preventScroll:true});
+}
+function pause(){
+  if(!['playing','reveal'].includes(state.phase))return;
+  const now=performance.now();
+  if(state.phase==='playing'){
+    state.remaining=Math.max(0,(state.deadline-now)/1000);
+    if(!state.remaining)settle(null,now);
+  }
+  state.pausedFrom=state.phase;state.revealElapsed=now-state.revealAt;state.phase='paused';
+  resetInput();$('paused').hidden=false;updateHUD();$('resume').focus({preventScroll:true});
+}
+function resume(){
+  if(state.phase!=='paused')return;
+  state.phase=state.pausedFrom;
+  if(state.phase==='playing')state.deadline=performance.now()+state.remaining*1000;
+  else state.revealAt=performance.now()-state.revealElapsed;
+  $('paused').hidden=true;updateHUD();canvas.focus({preventScroll:true});
+}
+function showHelp(){helpPaused=['playing','reveal'].includes(state.phase);if(helpPaused)pause();$('help').showModal();}
+$('help').addEventListener('close',()=>{if(helpPaused&&state.phase==='paused'&&!document.hidden)resume();helpPaused=false;});
+$('start').addEventListener('click',startRun);$('retry').addEventListener('click',startRun);$('pause-button').addEventListener('click',pause);$('resume').addEventListener('click',resume);
+$('help-button').addEventListener('click',showHelp);$('help-close').addEventListener('click',()=>$('help').close());$('help-done').addEventListener('click',()=>$('help').close());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('help').open){if(['playing','reveal'].includes(state.phase)){e.preventDefault();pause();}else if(state.phase==='paused'){e.preventDefault();resume();}}});
+canvas.addEventListener('pointerdown',e=>{
+  if(state.phase!=='playing'||input.pointerId!==null||!e.isPrimary||e.button!==0)return;
+  if(performance.now()>=state.deadline){settle(null,performance.now());return;}
+  e.preventDefault();canvas.focus({preventScroll:true});input.keyLine=null;input.pointerId=e.pointerId;input.a=mapPointer(e);input.b=input.a;input.clientStart={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{if(e.pointerId===input.pointerId&&state.phase==='playing'){input.b=mapPointer(e);e.preventDefault();}});
+canvas.addEventListener('pointerup',e=>{
+  if(e.pointerId!==input.pointerId)return;
+  const a=input.a,b=mapPointer(e),distance=Math.hypot(e.clientX-input.clientStart.x,e.clientY-input.clientStart.y);resetInput();
+  if(distance<12){invalidCut('划长一点，才能完成切割。');return;}submitCut(a,b);
+});
+canvas.addEventListener('pointercancel',resetInput);canvas.addEventListener('lostpointercapture',e=>{if(e.pointerId===input.pointerId)resetInput();});
+canvas.addEventListener('keydown',e=>{
+  if(state.phase!=='playing'||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter'].includes(e.key))return;
+  e.preventDefault();if(input.pointerId!==null)return;
+  input.keyLine??={angle:0,offset:0};
+  const k=input.keyLine,step=e.shiftKey?2:10;
+  if(e.key==='ArrowUp')k.offset=Math.max(-350,k.offset-step);
+  if(e.key==='ArrowDown')k.offset=Math.min(350,k.offset+step);
+  if(e.key==='ArrowLeft')k.angle-=e.shiftKey?0.01:0.05;
+  if(e.key==='ArrowRight')k.angle+=e.shiftKey?0.01:0.05;
+  const dx=Math.cos(k.angle),dy=Math.sin(k.angle),cx=500-dy*k.offset,cy=400+dx*k.offset;
+  input.a={x:cx-dx*700,y:cy-dy*700};input.b={x:cx+dx*700,y:cy+dy*700};
+  if(e.key==='Enter'){const a=input.a,b=input.b;resetInput();submitCut(a,b);}
+});
+const Renderer={
+  polygon(poly,color,dx=0,dy=0){ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p.x+dx,p.y+dy):ctx.moveTo(p.x+dx,p.y+dy));ctx.closePath();ctx.fillStyle=color;ctx.fill();},
+  line(a,b,color,width=2,dash=[]){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);},
+  draw(now){
+    ctx.setTransform(view.dpr,0,0,view.dpr,0,0);ctx.clearRect(0,0,view.width,view.height);ctx.translate(view.x,view.y);ctx.scale(view.scale,view.scale);
+    if(state.phase==='home'){
+      const t=reducedMotion.matches?0:Math.sin(now/2200)*7;
+      const a={x:200,y:180},b={x:800,y:595},cut=Geometry.split(state.poly,a,b);
+      this.polygon(cut.left,'#252525',-9-t,13+t);this.polygon(cut.right,'#D66347',9+t,-13-t);
+      const ends=Geometry.intersections(state.poly,a,b);if(ends.length===2)this.line(ends[0],ends[1],'#8B837A',1,[5,7]);
+      return;
+    }
+    if(state.phase==='over')return;
+    const cut=state.cut;
+    if(state.phase==='reveal'&&cut){
+      const duration=reducedMotion.matches?1:650,p=Math.min(1,Math.max(0,(now-state.revealAt-100)/duration)),ease=1-(1-p)**3;
+      const length=Math.hypot(cut.b.x-cut.a.x,cut.b.y-cut.a.y),nx=-(cut.b.y-cut.a.y)/length,ny=(cut.b.x-cut.a.x)/length;
+      const shift=(state.judgment.verdict==='PERFECT'?44:25)*ease;
+      this.polygon(cut.left,'#252525',nx*shift,ny*shift);this.polygon(cut.right,'#D66347',-nx*shift,-ny*shift);
+      const ends=Geometry.intersections(state.poly,cut.a,cut.b);
+      if(ends.length===2)this.line(ends[0],ends[1],state.judgment.verdict==='PERFECT'?'#526b52':'#8B837A',1,[4,7]);
+      if(state.judgment.verdict==='PERFECT'&&ease>.2){
+        ctx.globalAlpha=.5*ease;this.line({x:185,y:105},{x:245,y:105},'#526b52',2);this.line({x:755,y:695},{x:815,y:695},'#526b52',2);ctx.globalAlpha=1;
+      }
+    }else{
+      this.polygon(state.poly,'#252525');
+      if(input.a&&input.b&&Math.hypot(input.a.x-input.b.x,input.a.y-input.b.y)>1){
+        const ends=Geometry.intersections(state.poly,input.a,input.b);
+        if(ends.length===2){
+          this.line(ends[0],ends[1],'#D66347',2.5/view.scale);
+          for(const p of ends){ctx.beginPath();ctx.arc(p.x,p.y,3.5/view.scale,0,Math.PI*2);ctx.fillStyle='#D66347';ctx.fill();}
+        }else{this.line(input.a,input.b,'#D66347',1.5/view.scale,[4/view.scale,5/view.scale]);}
+      }
+    }
+  }
+};
+function tick(now){
+  if(state.phase==='playing'){
+    state.remaining=Math.max(0,(state.deadline-now)/1000);
+    if(!state.remaining)settle(null,now);
+    if(hintUntil&&now>hintUntil){hintUntil=0;$('instruction').classList.remove('invalid');$('instruction').textContent='划线穿过图形，松手完成切割。';}
+  }
+  if(state.phase==='playing'||state.phase==='reveal'||state.phase==='paused'){
+    const text=state.remaining.toFixed(1)+'秒';if(text!==lastTimerText){$('time').textContent=text;lastTimerText=text;$('timer').setAttribute('aria-valuenow',state.remaining.toFixed(1));}
+    $('time-bar').style.transform=`scaleX(${state.remaining/state.difficulty.seconds})`;$('clock').classList.toggle('urgent',state.remaining<4);
+  }
+  if(state.phase==='reveal'){
+    if(now-state.revealAt>160)$('reveal').classList.add('visible');
+    if(now-state.revealAt>(reducedMotion.matches?1050:1650)){if(state.lives===0)finishRun();else{state.round++;nextRound();}}
+  }
+  Renderer.draw(now);requestAnimationFrame(tick);
+}
+new ResizeObserver(resize).observe(canvas);window.addEventListener('resize',resize);
+updateHUD();resize();requestAnimationFrame(tick);
+</script>
+</body>
+</html>
